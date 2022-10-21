@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">RahulsTechPhoneBook</string>
+    <string name="description_action_call">make a phone call to %$1s</string>
+</resources>
