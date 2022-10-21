@@ -8,7 +8,9 @@ import android.provider.ContactsContract;
 import java.util.ArrayList;
 import java.util.List;
 
+import rahulstech.android.phonebook.model.ContactDetails;
 import rahulstech.android.phonebook.model.ContactDisplay;
+import rahulstech.android.phonebook.model.PhoneNumber;
 
 public class ContactRepository {
 
@@ -61,5 +63,65 @@ public class ContactRepository {
             throw new RepositoryException("error in loading display contacts",ex);
         }
         return contacts;
+    }
+
+    public ContactDetails getContactDetails(long contactId) {
+        try {
+            ContentResolver resolver = this.contactsProvider;
+            Cursor c = resolver.query(ContactsContract.Contacts.CONTENT_URI,
+                    new String[]{
+                            ContactsContract.Contacts._ID,
+                            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+                            ContactsContract.Contacts.PHOTO_URI
+                    },
+                    ContactsContract.Contacts._ID+" = "+contactId,null,
+                    null);
+
+            ContactDetails details = null;
+            if (null != c) {
+                if (c.moveToFirst()) details = ContactDetails.create(c);
+                c.close();
+            }
+
+            if (null != details) {
+                List<PhoneNumber> phoneNumbers = queryPhoneNumbers(contactId);
+
+                details.setPhoneNumbers(phoneNumbers);
+            }
+
+            return details;
+        }
+        catch (Exception ex) {
+            throw new RepositoryException("can not load contact details for contactId="+contactId,ex);
+        }
+    }
+
+    private List<PhoneNumber> queryPhoneNumbers(long contactId) {
+        try {
+            ContentResolver resolver = this.contactsProvider;
+            Cursor c = resolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    new String[]{
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                            ContactsContract.CommonDataKinds.Phone._ID,
+                            ContactsContract.CommonDataKinds.Phone.NUMBER,
+                            ContactsContract.CommonDataKinds.Phone.TYPE
+                    },
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID+" = "+contactId,null,
+                    null);
+
+            List<PhoneNumber> phoneNumbers = new ArrayList<>();
+            if (null != c) {
+                while (c.moveToNext()) {
+                    PhoneNumber phoneNumber = PhoneNumber.create(c);
+                    phoneNumbers.add(phoneNumber);
+                }
+                c.close();
+            }
+
+            return phoneNumbers;
+        }
+        catch (Exception ex) {
+            throw new RepositoryException("can not load PhoneNumber for contactId="+contactId,ex);
+        }
     }
 }

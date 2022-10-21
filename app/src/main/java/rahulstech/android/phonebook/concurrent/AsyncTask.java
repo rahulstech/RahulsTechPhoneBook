@@ -1,197 +1,105 @@
 package rahulstech.android.phonebook.concurrent;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import android.util.Log;
 
-public final class AsyncTask {
+import java.lang.ref.WeakReference;
+import java.util.concurrent.Executor;
+
+import androidx.annotation.NonNull;
+
+public abstract class AsyncTask<P,R> {
+
+    private static final String TAG = "AsyncTask";
 
     private final Object lock = new Object();
 
     private Executor backgroundExecutor = AppExecutors.getBackgroundExecutor();
     private Executor mainExecutor = AppExecutors.getMainExecutor();
 
-    private Lock mTaskLock;
-    private Condition mTaskCond;
-    private Queue<Task> mTasks;
+    private boolean canceled = false;
 
-    private boolean shutdown = false;
+    private R result = null;
 
     private WeakReference<AsyncTaskCallback> callbackRef = new WeakReference<>(null);
 
-    public AsyncTask() {
-        mTaskLock = new ReentrantLock();
-        mTaskCond = mTaskLock.newCondition();
-        mTasks = new ArrayDeque<>();
-        backgroundExecutor.execute(new ExecuteTask(this));
-    }
+    public AsyncTask() {}
 
     public void setAsyncTaskCallback(AsyncTaskCallback callback) {
         this.callbackRef = new WeakReference<>(callback);
     }
 
-    public void shutdown() {
+    public void cancel() {
         synchronized (lock) {
-            shutdown = true;
-            cancelAllTasks();
-            mTaskCond.signal();
-            onShutdown();
+            canceled = true;
         }
     }
 
-    public boolean isShutdown() {
+    public boolean isCanceled() {
         synchronized (lock) {
-            return shutdown;
+            return canceled;
         }
     }
 
-    public void enqueue(Task task) {
-        if (isShutdown()) throw new AsyncTaskException("async task is shutdown");
-        mTaskLock.lock();
+    public R getResult() {
+        return result;
+    }
+
+    public final void execute(P arg, @NonNull Executor executor) {
+        if (null == executor) throw new NullPointerException("null == executor");
+        executor.execute(() -> execute_task(arg));
+    }
+
+    public final void execute(P arg) {
+        execute(arg,backgroundExecutor);
+    }
+
+    protected abstract R onExecuteTask(P args) throws Exception;
+
+    private void execute_task(P arg) {
         try {
-            mTasks.add(task);
-            mTaskCond.signalAll();
+            if (isCanceled()) onCanceled();
+            Log.d(TAG,"will execute task");
+            R result = onExecuteTask(arg);
+            Log.d(TAG,"task execution done");
+            if (isCanceled()) onCanceled();
+            onResult(result);
         }
-        finally {
-            mTaskLock.unlock();
+        catch (Exception ex) {
+            Log.e(TAG,"error on task execution",ex);
+            onError(ex);
         }
     }
 
-    public void cancelAllTasks() {
-        for (Task t : mTasks) {
-            t.cancel();
-        }
-    }
-
-    protected void onShutdown() {
+    private void onError(Throwable error) {
         synchronized (lock) {
-            final AsyncTaskCallback callback = this.callbackRef.get();
-            if (null != callback) mainExecutor.execute(() -> callback.onShutdown(this, mTasks));
+            final AsyncTaskCallback<P,R> callback = callbackRef.get();
+            if (null != callback) mainExecutor.execute(() -> callback.onError(error));
         }
     }
 
-    protected void onTaskError(Task task, Throwable error) {
+    private void onResult(R result) {
         synchronized (lock) {
-            final AsyncTaskCallback callback = this.callbackRef.get();
-            if (null != callback) mainExecutor.execute(() -> callback.onError(this,task,error));
+            this.result = result;
+            final AsyncTaskCallback<P,R> callback = callbackRef.get();
+            if (null != callback) mainExecutor.execute(() -> callback.onResult(result));
         }
     }
 
-    protected void onTaskComplete(Task task) {
+    private void onCanceled() {
         synchronized (lock) {
-            final AsyncTaskCallback callback = this.callbackRef.get();
-            if (null != callback) mainExecutor.execute(() -> callback.onResult(this,task));
+            Log.i(TAG,"task canceled");
+            final AsyncTaskCallback<P,R> callback = callbackRef.get();
+            if (null != callback) mainExecutor.execute(() -> callback.onCanceled());
         }
     }
 
-    protected void onTaskCanceled(Task task) {
-        synchronized (lock) {
-            final AsyncTaskCallback callback = this.callbackRef.get();
-            if (null != callback) mainExecutor.execute(() -> callback.onCanceled(this,task));
-        }
-    }
 
-    public static abstract class Task {
+    public static class AsyncTaskCallback<P,R> {
 
-        private final Object lock = new Object();
+        public void onError(Throwable error) {}
 
-        private final int taskId;
-        private boolean canceled = false;
-        private Object result = null;
+        public void onResult(R result) {}
 
-        protected Task(int taskId) {
-            this.taskId = taskId;
-        }
-
-        public final <R> void setResult(R result) {
-            synchronized (lock) {
-                this.result = result;
-            }
-        }
-
-        @SuppressWarnings("unchecked")
-        public final <R> R getResult() {
-            synchronized (lock) {
-                return (R) result;
-            }
-        }
-
-        public final void cancel() {
-            synchronized (lock) {
-                this.canceled = canceled;
-            }
-        }
-
-        public final boolean isCanceled() {
-            synchronized (lock) {
-                return this.canceled;
-            }
-        }
-
-        public int getTaskId() {
-            return taskId;
-        }
-
-        public abstract void execute();
-    }
-
-    public interface AsyncTaskCallback {
-
-        void onError(AsyncTask asyncTask, Task task, Throwable error);
-
-        void onResult(AsyncTask asyncTask, Task task);
-
-        void onCanceled(AsyncTask asyncTask, Task task);
-
-        void onShutdown(AsyncTask asyncTask, Queue<Task> notExecutedTasks);
-    }
-
-    private static class ExecuteTask implements Runnable {
-
-        final AsyncTask asyncTask;
-
-        public ExecuteTask(AsyncTask asyncTask) {
-            this.asyncTask = asyncTask;
-        }
-
-        @Override
-        public void run() {
-            Lock lock = asyncTask.mTaskLock;
-            Condition cond = asyncTask.mTaskCond;
-            Queue<Task> mTasks = asyncTask.mTasks;
-            Task running = null;
-            while (true) {
-                lock.lock();
-                try {
-                    cond.await();
-                    if (asyncTask.isShutdown()) {
-                        if (null != running) running.cancel();
-                        break;
-                    }
-                    running = mTasks.poll();
-                    try {
-                        if (running.isCanceled()) throw new AsyncTaskException("trying to execute canceled task");
-                        running.execute();
-                        if (running.isCanceled())
-                            asyncTask.onTaskCanceled(running);
-                        else if (!asyncTask.isShutdown())
-                            asyncTask.onTaskComplete(running);
-                    }
-                    catch (Throwable taskError) {
-                        asyncTask.onTaskError(running,taskError);
-                    }
-                } catch (InterruptedException e) {
-                    asyncTask.shutdown();
-                    break;
-                }
-                finally {
-                    lock.unlock();
-                }
-            }
-        }
+        public void onCanceled() {}
     }
 }

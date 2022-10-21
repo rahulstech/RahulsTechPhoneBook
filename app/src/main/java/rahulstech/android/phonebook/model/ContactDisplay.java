@@ -47,11 +47,6 @@ public class ContactDisplay {
         return contactId == that.contactId && hasPhoneNumber == that.hasPhoneNumber && Objects.equals(displayName, that.displayName) && Objects.equals(thumbnailUri, that.thumbnailUri);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(contactId, displayName, thumbnailUri, hasPhoneNumber);
-    }
-
     public static ContactDisplay create(Cursor c) {
         try {
             int _iID = c.getColumnIndexOrThrow(ContactsContract.Contacts._ID);

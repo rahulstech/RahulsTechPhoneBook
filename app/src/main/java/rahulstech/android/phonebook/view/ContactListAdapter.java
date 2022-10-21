@@ -41,27 +41,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     private LayoutInflater inflater;
     private List<ContactDisplay> original = Collections.EMPTY_LIST;
 
-    private AsyncTask asyncTask = new AsyncTask();
-    private AsyncTask.AsyncTaskCallback callback = new AsyncTask.AsyncTaskCallback() {
-        @Override
-        public void onError(AsyncTask asyncTask, AsyncTask.Task task, Throwable error) {}
-
-        @Override
-        public void onResult(AsyncTask asyncTask, AsyncTask.Task task) {
-            if (1 == task.getTaskId()) {
-                changeListItems(changeItemTask.getResult());
-            }
-            else if (2 == task.getTaskId()) {
-                runChangeItemsTask(filterItemTask.getResult());
-            }
-        }
-
-        @Override
-        public void onCanceled(AsyncTask asyncTask, AsyncTask.Task task) {}
-
-        @Override
-        public void onShutdown(AsyncTask asyncTask, Queue<AsyncTask.Task> notExecutedTasks) {}
-    };
+    private OnListItemClickListener itemClickListener = null;
 
     private ChangeItemTask changeItemTask = null;
     private FilterItemTask filterItemTask = null;
@@ -69,7 +49,10 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     public ContactListAdapter(@NonNull Context context) {
         inflater = LayoutInflater.from(context);
         mDiffer = new AsyncListDiffer<>(this,DIFF_ITEM_CALLBACK);
-        asyncTask.setAsyncTaskCallback(callback);
+    }
+
+    public void setOnItemClickListener(OnListItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
     }
 
     public void changeContacts(List<ContactDisplay> contacts) {
@@ -77,10 +60,17 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         changeOriginalContacts(contacts);
     }
 
+    public ListItem getItem(int position) {
+        return mDiffer.getCurrentList().get(position);
+    }
+
     @NonNull
     @Override
     public ContactListItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ContactListItemViewHolder(inflater.inflate(R.layout.contact_list_item,parent,false));
+        ContactListItemViewHolder vh = new ContactListItemViewHolder(this,
+                inflater.inflate(R.layout.contact_list_item,parent,false));
+        vh.setOnListItemClickListener(itemClickListener);
+        return vh;
     }
 
     @Override
@@ -106,16 +96,27 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         if (null != changeItemTask) {
             changeItemTask.cancel();
         }
-        changeItemTask = new ChangeItemTask(contacts);
-        asyncTask.enqueue(changeItemTask);
+        changeItemTask = new ChangeItemTask(contacts, new AsyncTask.AsyncTaskCallback<Void, List<ListItem>>(){
+
+            @Override
+            public void onResult(List<ListItem> result) {
+                changeListItems(result);
+            }
+        });
+        changeItemTask.execute(null);
     }
 
     private void runFilterItemsTask(String phrase, List<ContactDisplay> original) {
         if (null != filterItemTask) {
             filterItemTask.cancel();
         }
-        filterItemTask = new FilterItemTask(phrase,original);
-        asyncTask.enqueue(filterItemTask);
+        filterItemTask = new FilterItemTask(phrase,original, new AsyncTask.AsyncTaskCallback<Void, List<ContactDisplay>>(){
+            @Override
+            public void onResult(List<ContactDisplay> result) {
+                runChangeItemsTask(result);
+            }
+        });
+        filterItemTask.execute(null);
     }
 
     private void changeOriginalContacts(List<ContactDisplay> contacts) {
@@ -132,8 +133,8 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
 
         public static final int TYPE_CONTACT = 2;
 
-        String header;
-        ContactDisplay contact;
+        public String header;
+        public ContactDisplay contact;
 
         int itemType;
 
@@ -169,7 +170,12 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         }
     }
 
-    public static class ContactListItemViewHolder extends RecyclerView.ViewHolder {
+    public interface OnListItemClickListener {
+
+        void onClickListItem(RecyclerView.Adapter<?> adapter, int position);
+    }
+
+    public static class ContactListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         View itemHeader;
         View itemContact;
@@ -179,13 +185,30 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         TextView contactName;
         ImageView thumbnail;
 
-        public ContactListItemViewHolder(@NonNull View v) {
+        ContactListAdapter adapter;
+        OnListItemClickListener itemClickListener;
+
+        public ContactListItemViewHolder(ContactListAdapter adapter, @NonNull View v) {
             super(v);
             itemHeader = v.findViewById(R.id.item_header);
             itemContact = v.findViewById(R.id.item_contact);
             header = v.findViewById(R.id.header);
             contactName = v.findViewById(R.id.contact_name);
             thumbnail = v.findViewById(R.id.contact_thumbnail);
+            this.adapter = adapter;
+            itemContact.setOnClickListener(this);
+        }
+
+        public void setOnListItemClickListener(OnListItemClickListener itemClickListener) {
+            this.itemClickListener = itemClickListener;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (v == itemContact) {
+                if (null != itemClickListener)
+                    itemClickListener.onClickListItem(adapter,getAdapterPosition());
+            }
         }
 
         public void bind(@NonNull ListItem item) {
@@ -211,13 +234,13 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         }
     }
 
-    private static class ChangeItemTask extends AsyncTask.Task {
+    private static class ChangeItemTask extends AsyncTask<Void,List<ListItem>> {
 
         final List<ContactDisplay> newContacts;
 
-        public ChangeItemTask(List<ContactDisplay> newContacts) {
-            super(1);
+        public ChangeItemTask(List<ContactDisplay> newContacts,AsyncTaskCallback<Void,List<ListItem>> callback) {
             this.newContacts = newContacts;
+            setAsyncTaskCallback(callback);
         }
 
         public List<ContactDisplay> getNewContacts() {
@@ -225,10 +248,9 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         }
 
         @Override
-        public void execute() {
-            if (isCanceled()) return;
+        protected List<ListItem> onExecuteTask(Void args) throws Exception {
             List<ListItem> items = buildListItems(newContacts);
-            setResult(items);
+            return items;
         }
 
         private List<ListItem> buildListItems(List<ContactDisplay> contacts) {
@@ -257,15 +279,15 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         }
     }
 
-    private static class FilterItemTask extends AsyncTask.Task {
+    private static class FilterItemTask extends AsyncTask<Void,List<ContactDisplay>> {
 
         final String phrase;
         final List<ContactDisplay> original;
 
-        public FilterItemTask(String phrase, List<ContactDisplay> original) {
-            super(2);
+        public FilterItemTask(String phrase, List<ContactDisplay> original, AsyncTaskCallback<Void,List<ContactDisplay>> callback) {
             this.phrase = phrase;
             this.original = original;
+            setAsyncTaskCallback(callback);
         }
 
         public String getPhrase() {
@@ -277,17 +299,16 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         }
 
         @Override
-        public void execute() {
+        protected List<ContactDisplay> onExecuteTask(Void args) throws Exception {
             List<ContactDisplay> result = new ArrayList<>();
             Iterator<ContactDisplay> it = original.iterator();
             while (it.hasNext()) {
-                if (isCanceled()) return;
                 ContactDisplay contact = it.next();
                 if (isAllowed(contact,phrase)) {
                     result.add(contact);
                 }
             }
-            setResult(result);
+            return result;
         }
 
         boolean isAllowed(ContactDisplay contact, String phrase) {

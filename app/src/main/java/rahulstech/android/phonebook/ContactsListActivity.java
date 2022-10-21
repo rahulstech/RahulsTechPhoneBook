@@ -10,6 +10,7 @@ import rahulstech.android.phonebook.repository.ContactRepository;
 import rahulstech.android.phonebook.view.ContactListAdapter;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +23,9 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.Queue;
 
-public class ContactsListActivity extends AppCompatActivity {
+import static rahulstech.android.phonebook.ContactDetailsActivity.EXTRA_CONTACT_ID;
+
+public class ContactsListActivity extends AppCompatActivity implements ContactListAdapter.OnListItemClickListener {
 
     private static final String TAG = "ContactsListActivity";
 
@@ -34,27 +37,17 @@ public class ContactsListActivity extends AppCompatActivity {
     RecyclerView contactList;
     ContactListAdapter adapter;
 
-    AsyncTask.AsyncTaskCallback asyncTaskCallback = new AsyncTask.AsyncTaskCallback() {
+    AsyncTask.AsyncTaskCallback<Void,List<ContactDisplay>> asyncTaskCallback = new AsyncTask.AsyncTaskCallback<Void, List<ContactDisplay>>() {
         @Override
-        public void onError(AsyncTask asyncTask, AsyncTask.Task task, Throwable error) {
-            Log.e(TAG,"taskId="+task.getTaskId()+" has error",error);
+        public void onError(Throwable error) {
             Toast.makeText(ContactsListActivity.this, "Unable to load contacts", Toast.LENGTH_SHORT).show();
         }
 
         @Override
-        public void onResult(AsyncTask asyncTask, AsyncTask.Task task) {
-            adapter.changeContacts(task.getResult());
+        public void onResult(List<ContactDisplay> contacts) {
+            adapter.changeContacts(contacts);
         }
-
-        @Override
-        public void onCanceled(AsyncTask asyncTask, AsyncTask.Task task) {
-            Log.d(TAG,"taskId="+task.getTaskId()+" canceled");
-        }
-
-        @Override
-        public void onShutdown(AsyncTask asyncTask, Queue<AsyncTask.Task> notExecutedTasks) {}
     };
-    AsyncTask asyncTask = null;
     LoadContactsListTask task = null;
 
     @Override
@@ -65,10 +58,9 @@ public class ContactsListActivity extends AppCompatActivity {
         contactList = findViewById(R.id.contact_list);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         adapter = new ContactListAdapter(this);
+        adapter.setOnItemClickListener(this);
         contactList.setLayoutManager(layoutManager);
         contactList.setAdapter(adapter);
-        asyncTask = new AsyncTask();
-        asyncTask.setAsyncTaskCallback(asyncTaskCallback);
         searchContacts.addTextChangedListener(contactSearchTextWatcher);
     }
 
@@ -86,12 +78,24 @@ public class ContactsListActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    public void onClickListItem(RecyclerView.Adapter<?> adapter, int position) {
+        Log.d(TAG,"item @"+position+" clicked");
+        ContactListAdapter.ListItem item = this.adapter.getItem(position);
+        if (null != item && null != item.contact) {
+            Log.i(TAG,"show contact details for contactId="+item.contact.getContactId());
+            Intent intent = new Intent(this,ContactDetailsActivity.class);
+            intent.putExtra(EXTRA_CONTACT_ID,item.contact.getContactId());
+            startActivity(intent);
+        }
+    }
+
     private void loadContacts() {
         if (null != task) {
             task.cancel();
         }
-        task = new LoadContactsListTask(ContactRepository.get(this));
-        asyncTask.enqueue(task);
+        task = new LoadContactsListTask(ContactRepository.get(this),asyncTaskCallback);
+        task.execute(null);
     }
 
     private boolean hasContactsPermission() {
@@ -138,23 +142,20 @@ public class ContactsListActivity extends AppCompatActivity {
         }
     };
 
-    private static class LoadContactsListTask extends AsyncTask.Task {
+    private static class LoadContactsListTask extends AsyncTask<Void,List<ContactDisplay>> {
 
         ContactRepository repo;
 
-        public LoadContactsListTask(ContactRepository repo) {
-            super(0);
+        public LoadContactsListTask(ContactRepository repo, AsyncTaskCallback<Void,List<ContactDisplay>> callback) {
             this.repo = repo;
+            setAsyncTaskCallback(callback);
         }
 
         @Override
-        public void execute() {
+        protected List<ContactDisplay> onExecuteTask(Void args) throws Exception {
             ContactRepository repo = this.repo;
-            if (isCanceled()) return;
-            Log.i(TAG,"start loading contacts");
             List<ContactDisplay> contactsList = repo.loadContactDisplay();
-            Log.i(TAG,"contacts loaded");
-            setResult(contactsList);
+            return contactsList;
         }
     }
 }
