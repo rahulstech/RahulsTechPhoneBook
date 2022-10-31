@@ -1,40 +1,48 @@
 package rahulstech.android.phonebook.model;
 
-import android.database.Cursor;
 import android.net.Uri;
-import android.provider.ContactsContract;
 
 import java.util.Collections;
 import java.util.List;
 
+import rahulstech.android.phonebook.util.Check;
+
 public class ContactDetails {
 
-    private long contactId;
+    private Account account;
 
-    private String displayName;
+    private Contact contact;
 
-    private Uri photoUri;
+    private PhoneNumber phoneNumberPrimary;
 
-    private List<PhoneNumber> phoneNumbers = Collections.emptyList();
+    private Email emailPrimary;
 
-    private List<Email> emails = Collections.emptyList();
+    private List<PhoneNumber> phoneNumbers = Collections.EMPTY_LIST;
+    
+    private List<Email> emails = Collections.EMPTY_LIST;
 
-    public ContactDetails(long contactId, String displayName, Uri photoUri) {
-        this.contactId = contactId;
-        this.displayName = displayName;
-        this.photoUri = photoUri;
+
+    public ContactDetails(Account account, Contact contact, List<PhoneNumber> phoneNumbers, List<Email> emails) {
+        this.account = account;
+        this.contact = contact;
+        setPhoneNumbers(phoneNumbers);
+        setEmails(emails);
     }
 
-    public long getContactId() {
-        return contactId;
+    public Account getAccount() {
+        return account;
+    }
+
+    public Contact getContact() {
+        return contact;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return contact.getDisplayName();
     }
 
     public Uri getPhotoUri() {
-        return photoUri;
+        return contact.getPhotoUri();
     }
 
     public List<PhoneNumber> getPhoneNumbers() {
@@ -43,6 +51,27 @@ public class ContactDetails {
 
     public void setPhoneNumbers(List<PhoneNumber> phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
+        if (null == phoneNumbers) this.phoneNumbers = Collections.EMPTY_LIST;
+        if (!this.phoneNumbers.isEmpty()) {
+            this.phoneNumberPrimary = phoneNumbers.get(0);
+            for (PhoneNumber pn : this.phoneNumbers) {
+                if (pn.isPrimary()) {
+                    this.phoneNumberPrimary = pn;
+                    break;
+                }
+            }
+        }
+        else {
+            this.phoneNumberPrimary = null;
+        }
+    }
+
+    public boolean hasPhoneNumberPrimary() {
+        return null != phoneNumberPrimary;
+    }
+
+    public PhoneNumber getPhoneNumberPrimary() {
+        return phoneNumberPrimary;
     }
 
     public List<Email> getEmails() {
@@ -51,22 +80,37 @@ public class ContactDetails {
 
     public void setEmails(List<Email> emails) {
         this.emails = emails;
+        if (null == emails) this.emails = Collections.EMPTY_LIST;
+        if (!this.emails.isEmpty()) {
+            this.emailPrimary = this.emails.get(0);
+            for (Email e : this.emails) {
+                if (e.isPrimary()) {
+                    this.emailPrimary = e;
+                    break;
+                }
+            }
+        }
+        else {
+            this.emailPrimary = null;
+        }
     }
 
-    public static ContactDetails create(Cursor c) {
-        try {
-            int _iContactId = c.getColumnIndexOrThrow(ContactsContract.Contacts._ID);
-            int _iDisplayName = c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY);
-            int _iPhotoUri = c.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI);
+    public boolean hasEmailPrimary() {
+        return this.emailPrimary != null;
+    }
 
-            long contactId = c.getLong(_iContactId);
-            String displayName = c.getString(_iDisplayName);
-            Uri photoUri = c.isNull(_iPhotoUri) ? null : Uri.parse(c.getString(_iPhotoUri));
+    public Email getEmailPrimary() {
+        return emailPrimary;
+    }
 
-            return new ContactDetails(contactId,displayName,photoUri);
-        }
-        catch (Exception ex) {
-            throw new ModelException("can not create ContactDetails",ex);
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContactDetails)) return false;
+        ContactDetails details = (ContactDetails) o;
+        return Check.isEquals(account,details.account)
+                && Check.isEquals(contact, details.contact)
+                && Check.isEquals(phoneNumbers, details.phoneNumbers)
+                && Check.isEquals(emails, details.emails);
     }
 }

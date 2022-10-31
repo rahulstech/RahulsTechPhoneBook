@@ -1,126 +1,107 @@
 package rahulstech.android.phonebook;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import rahulstech.android.phonebook.concurrent.AsyncTask;
 import rahulstech.android.phonebook.model.ContactDisplay;
-import rahulstech.android.phonebook.repository.ContactRepository;
+import rahulstech.android.phonebook.model.PhoneNumber;
+import rahulstech.android.phonebook.view.AbsSectionedRecyclerListViewAdapter;
 import rahulstech.android.phonebook.view.ContactListAdapter;
+import rahulstech.android.phonebook.view.OnListItemClickListener;
+import rahulstech.android.phonebook.viewmodel.ContactDisplayViewModel;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+
 import java.util.List;
-import java.util.Queue;
 
-import static rahulstech.android.phonebook.ContactDetailsActivity.EXTRA_CONTACT_ID;
+import static rahulstech.android.phonebook.ContactDetailsActivity.EXTRA_LOOKUP_KEY;
 
-public class ContactsListActivity extends AppCompatActivity implements ContactListAdapter.OnListItemClickListener {
+public class ContactsListActivity extends AppCompatActivity implements OnListItemClickListener {
+    // TODO: contact list scrolling not smooth
+    // TODO: search contact not properly implemented
 
     private static final String TAG = "ContactsListActivity";
-
-    private static final int RC_READ_CONTACTS = 1;
 
     private static final int CONTACT_SEARCH_MIN_INPUT = 3;
 
     EditText searchContacts;
     RecyclerView contactList;
+    View btnAddContact;
     ContactListAdapter adapter;
 
-    AsyncTask.AsyncTaskCallback<Void,List<ContactDisplay>> asyncTaskCallback = new AsyncTask.AsyncTaskCallback<Void, List<ContactDisplay>>() {
-        @Override
-        public void onError(Throwable error) {
-            Toast.makeText(ContactsListActivity.this, "Unable to load contacts", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onResult(List<ContactDisplay> contacts) {
-            adapter.changeContacts(contacts);
-        }
-    };
-    LoadContactsListTask task = null;
+    ContactDisplayViewModel vm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts_list);
+
+        vm = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(ContactDisplayViewModel.class);
+
         searchContacts = findViewById(R.id.search_contacts);
         contactList = findViewById(R.id.contact_list);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        btnAddContact = findViewById(R.id.button_add_contact);
+        btnAddContact.setOnClickListener(v -> onAddNewContact());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         adapter = new ContactListAdapter(this);
-        adapter.setOnItemClickListener(this);
+        adapter.setOnListItemClickListener(this);
+        new ItemTouchHelper(onContactListItemTouchHelperCallback).attachToRecyclerView(contactList);
         contactList.setLayoutManager(layoutManager);
         contactList.setAdapter(adapter);
         searchContacts.addTextChangedListener(contactSearchTextWatcher);
+
+        if (hasRequiredPermissions()) loadContacts();
+        else vm.addHaltedTask(()->loadContacts());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (hasContactsPermission()) {
-            loadContacts();
+        if (!hasRequiredPermissions()) {
+            requestRequiredPermissions();
         }
     }
 
     @Override
-    protected void onPause() {
-        if (null != task) task.cancel();
-        super.onPause();
-    }
-
-    @Override
-    public void onClickListItem(RecyclerView.Adapter<?> adapter, int position) {
-        Log.d(TAG,"item @"+position+" clicked");
-        ContactListAdapter.ListItem item = this.adapter.getItem(position);
-        if (null != item && null != item.contact) {
-            Log.i(TAG,"show contact details for contactId="+item.contact.getContactId());
+    public void onClickListItem(RecyclerView.Adapter<?> adapter, View which, int position, int itemType) {
+        ContactDisplay item = this.adapter.getItemChild(position);
+        if (null != item) {
             Intent intent = new Intent(this,ContactDetailsActivity.class);
-            intent.putExtra(EXTRA_CONTACT_ID,item.contact.getContactId());
+            intent.putExtra(EXTRA_LOOKUP_KEY,item.getContact().getLookupKey());
             startActivity(intent);
         }
     }
 
+    private void onAddNewContact() {
+        Intent intent = new Intent(this,ContactInputActivity.class);
+        intent.setAction(Intent.ACTION_INSERT);
+        startActivity(intent);
+    }
+
     private void loadContacts() {
-        if (null != task) {
-            task.cancel();
-        }
-        task = new LoadContactsListTask(ContactRepository.get(this),asyncTaskCallback);
-        task.execute(null);
-    }
-
-    private boolean hasContactsPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // ask runtime permission for sdk >= 23
-            String readContacts = Manifest.permission.READ_CONTACTS;
-            if (PackageManager.PERMISSION_DENIED == checkSelfPermission(readContacts)) {
-                requestPermissions(new String[]{readContacts},RC_READ_CONTACTS);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (RC_READ_CONTACTS == requestCode) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadContacts();
-            }
-            else {
-                Toast.makeText(this, "Contact Permission Not Granted", Toast.LENGTH_SHORT).show();
-            }
-        }
+        vm.getAllContacts().observe(this,contacts -> {
+            adapter.changeChildren(contacts);
+        });
     }
 
     private TextWatcher contactSearchTextWatcher = new TextWatcher() {
@@ -142,20 +123,129 @@ public class ContactsListActivity extends AppCompatActivity implements ContactLi
         }
     };
 
-    private static class LoadContactsListTask extends AsyncTask<Void,List<ContactDisplay>> {
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///                           Voice Call & Sms by Contact Swipe                                ///
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
-        ContactRepository repo;
 
-        public LoadContactsListTask(ContactRepository repo, AsyncTaskCallback<Void,List<ContactDisplay>> callback) {
-            this.repo = repo;
-            setAsyncTaskCallback(callback);
+    private ItemTouchHelper.Callback onContactListItemTouchHelperCallback
+            = new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT){
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView,
+                              @NonNull RecyclerView.ViewHolder viewHolder,
+                              @NonNull RecyclerView.ViewHolder target) {
+            return false;
         }
 
         @Override
-        protected List<ContactDisplay> onExecuteTask(Void args) throws Exception {
-            ContactRepository repo = this.repo;
-            List<ContactDisplay> contactsList = repo.loadContactDisplay();
-            return contactsList;
+        public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            ContactListAdapter.ContactListItemViewHolder vh = (ContactListAdapter.ContactListItemViewHolder) viewHolder;
+            if (vh.getItemViewType() != AbsSectionedRecyclerListViewAdapter.ListItem.TYPE_CHILD) return 0;
+            ContactDisplay display = adapter.getItemChild(vh.getAdapterPosition());
+            if (null == display || !display.hasPhoneNumber()) return 0;
+            return super.getSwipeDirs(recyclerView, viewHolder);
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            ContactListAdapter.ContactListItemViewHolder vh = (ContactListAdapter.ContactListItemViewHolder) viewHolder;
+            ContactDisplay display = adapter.getItemChild(vh.getAdapterPosition());
+            if (ItemTouchHelper.LEFT == direction) {
+                if (display.hasPhoneNumberPrimary()) makeVoiceCall(display.getPhoneNumberPrimary().getNumber());
+                else {
+                    onChoosePhoneNumber(display.getPhoneNumbers(),(di,which)->makeVoiceCall(display.getPhoneNumbers().get(which).getNumber()));
+                }
+            } else {
+                if (display.hasPhoneNumberPrimary()) sendSms(display.getPhoneNumberPrimary().getNumber());
+                else {
+                    onChoosePhoneNumber(display.getPhoneNumbers(),(di,which)->sendSms(display.getPhoneNumbers().get(which).getNumber()));
+                }
+            }
+            adapter.notifyItemChanged(vh.getAdapterPosition());
+        }
+    };
+
+    private void onChoosePhoneNumber(List<PhoneNumber> numbers, AlertDialog.OnClickListener listener) {
+        new AlertDialog.Builder(this)
+                .setSingleChoiceItems(new ArrayAdapter<PhoneNumber>(this,android.R.layout.simple_list_item_single_choice,numbers){
+                    @NonNull
+                    @Override
+                    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        TextView view = (TextView) super.getView(position, convertView, parent);
+                        view.setText(getItem(position).getNumber());
+                        return view;
+                    }
+                },0,(di,which)->{
+                    listener.onClick(di,which);
+                    di.dismiss();
+                })
+                .setTitle(R.string.label_mobile)
+                .show();
+    }
+
+    private void makeVoiceCall(String number) {
+        if (hasRequiredPermissions()) {
+            Intent i = new Intent(Intent.ACTION_CALL);
+            i.setData(Uri.parse("tel:" + number));
+            startActivity(i);
+        }
+        else {
+            vm.addHaltedTask(()->makeVoiceCall(number));
+            requestRequiredPermissions();
+        }
+    }
+
+    private void sendSms(String number) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse("sms:"+number));
+        startActionActivity(i);
+    }
+
+    private void startActionActivity(Intent intent) {
+        startActivity(Intent.createChooser(intent,"Choose"));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ///                                  Runtime Permission                                     ///
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static final int PERMISSION_CODE = 1;
+
+    private static final String[] PERMISSIONS = new String[]{
+            Manifest.permission.READ_CONTACTS,Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.CALL_PHONE
+    };
+
+    private boolean hasRequiredPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // ask runtime permission for sdk >= 23
+            for (String permission : PERMISSIONS) {
+                if (PackageManager.PERMISSION_DENIED
+                        == ActivityCompat.checkSelfPermission(this,permission))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    private void requestRequiredPermissions() {
+        ActivityCompat.requestPermissions(this,PERMISSIONS,PERMISSION_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (PERMISSION_CODE == requestCode) {
+            if (hasRequiredPermissions()) {
+                if (vm.hasAnyHaltedTask()) {
+                    vm.getHaltedTask().run();
+                    vm.removeHaltedTask();
+                }
+            }
+            else {
+                Toast.makeText(this,R.string.message_permission_not_granted,Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
 }

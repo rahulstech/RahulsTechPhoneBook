@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/gap_small">
+
+    <Button
+        android:id="@+id/button_positive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="@dimen/gap_tiny"
+        app:layout_goneMarginLeft="@dimen/gap_tiny"
+        android:textColor="@color/black"
+        android:text="@string/label_save"/>
+    <Button
+        android:id="@+id/button_negative"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toStartOf="@id/button_positive"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="@dimen/gap_tiny"
+        app:layout_goneMarginLeft="@dimen/gap_tiny"
+        android:textColor="@color/black"
+        android:text="@string/label_cancel"/>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_primary"
+        android:textColor="@color/black"
+        android:paddingLeft="@dimen/gap_tiny"
+        android:paddingRight="@dimen/gap_tiny"
+        android:paddingTop="@dimen/gap_small"
+        android:paddingBottom="@dimen/gap_small"
+        android:singleLine="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_negative"
+        tools:text="This is title"/>
+
+    <FrameLayout
+        android:id="@+id/content_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="200dp"
+        android:layout_marginTop="@dimen/gap_large"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

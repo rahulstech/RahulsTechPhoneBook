@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.RahulsTechPhoneBook" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimary">@color/color_blue_secondary</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
@@ -17,7 +17,45 @@
     <style name="Theme.RahulsTechPhoneBook.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
+    
+    <style name="Theme.RahulsTechPhoneBook.RoundedPhoto">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    
+    <style name="Theme.RahulsTechPhoneBook.ContactProfile">
+        <item name="cornerFamilyBottomLeft">rounded</item>
+        <item name="cornerSizeBottomLeft">20%</item>
+        <item name="cornerFamilyBottomRight">rounded</item>
+        <item name="cornerSizeBottomRight">20%</item>
+    </style>
+
+    <style name="Theme.RahulsTechPhoneBook.ProfileActionButton">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:layout_width">@dimen/clickable_icon_size_small</item>
+        <item name="android:layout_height">@dimen/clickable_icon_size_small</item>
+        <item name="android:layout_marginRight">@dimen/gap_tiny</item>
+        <item name="android:layout_marginLeft">@dimen/gap_tiny</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="Theme.RahulsTechPhoneBook.ProfileSmallActionButton">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:layout_width">@dimen/clickable_icon_size_tiny</item>
+        <item name="android:layout_height">@dimen/clickable_icon_size_tiny</item>
+        <item name="android:scaleType">fitXY</item>
+        <item name="android:layout_marginRight">@dimen/gap_tiny</item>
+        <item name="android:layout_marginLeft">@dimen/gap_tiny</item>
+    </style>
+
+    <style name="Theme.RahulsTechPhoneBook.SectionThumb">
+        <item name="android:textColor">@color/white</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="android:checkable">true</item>
+        <item name="chipBackgroundColor">@color/color_light_yellow_green</item>
+    </style>
+
 </resources>

@@ -1,6 +1,6 @@
-package rahulstech.android.phonebook.model;
+package rahulstech.android.phonebook.repository;
 
-public class ModelException extends RuntimeException {
+public class ModelException extends RepositoryException {
 
     public ModelException(String message) {
         super(message);

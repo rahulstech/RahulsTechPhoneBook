@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ContactInputActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/gap_atomic"
+            android:paddingRight="@dimen/gap_atomic"
+            tools:context=".ContactInputActivity">
+
+            <Spinner
+                android:id="@+id/choose_account"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/clickable_icon_size_small"
+                android:layout_marginLeft="@dimen/gap_small"
+                android:layout_marginRight="@dimen/gap_small"
+                android:layout_marginTop="@dimen/gap_small"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/contact_photo"
+                android:layout_width="@dimen/clickable_icon_size_xlarge"
+                android:layout_height="@dimen/clickable_icon_size_xlarge"
+                android:layout_marginTop="60dp"
+                app:layout_constraintTop_toBottomOf="@id/choose_account"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:shapeAppearanceOverlay="@style/Theme.RahulsTechPhoneBook.RoundedPhoto"
+                app:srcCompat="@mipmap/placeholder_contact_photo"/>
+
+            <ImageView
+                android:id="@+id/icon_name"
+                android:layout_width="@dimen/clickable_icon_size_tiny"
+                android:layout_height="@dimen/clickable_icon_size_tiny"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/contact_photo"
+                app:srcCompat="@drawable/ic_baseline_person"
+                app:tint="@color/color_mute"/>
+
+            <ImageButton
+                android:id="@+id/button_switch_name"
+                android:layout_width="@dimen/clickable_icon_size_small"
+                android:layout_height="@dimen/clickable_icon_size_small"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/contact_photo"
+                app:srcCompat="@drawable/ic_baseline_arrow_drop_down"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/color_mute"/>
+
+            <FrameLayout
+                android:id="@+id/section_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintTop_toBottomOf="@id/contact_photo"
+                app:layout_constraintStart_toEndOf="@id/icon_name"
+                app:layout_constraintEnd_toStartOf="@id/button_switch_name">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/section_display_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/gap_small"
+                    android:layout_marginRight="@dimen/gap_small"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    android:hint="Name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/display_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:id="@+id/section_structured_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_prefix">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/preix"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_first_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/first_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_middle_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/middle_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_last_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/last_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </FrameLayout>
+
+            <ImageView
+                android:id="@+id/icon_number"
+                android:layout_width="@dimen/clickable_icon_size_tiny"
+                android:layout_height="@dimen/clickable_icon_size_tiny"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/section_name"
+                app:srcCompat="@drawable/ic_baseline_phone"
+                app:tint="@color/color_mute"/>
+
+            <LinearLayout
+                android:id="@+id/section_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintStart_toEndOf="@id/icon_number"
+                app:layout_constraintTop_toBottomOf="@id/section_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:orientation="vertical"
+                android:gravity="top">
+
+                <Button
+                    android:id="@+id/button_add_number"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/gap_medium"
+                    android:layout_marginLeft="@dimen/gap_medium"
+                    android:layout_marginTop="@dimen/gap_medium"
+                    app:backgroundTint="@color/color_blue_secondary"
+                    android:text="@string/add_number" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/icon_email"
+                android:layout_width="@dimen/clickable_icon_size_tiny"
+                android:layout_height="@dimen/clickable_icon_size_tiny"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/section_number"
+                app:srcCompat="@drawable/ic_baseline_alternate_email"
+                app:tint="@color/color_mute"/>
+
+            <LinearLayout
+                android:id="@+id/section_email"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gap_large"
+                app:layout_constraintStart_toEndOf="@id/icon_number"
+                app:layout_constraintTop_toBottomOf="@id/section_number"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="@dimen/gap_large"
+                android:orientation="vertical"
+                android:gravity="top">
+
+                <Button
+                    android:id="@+id/button_add_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/gap_medium"
+                    android:layout_marginLeft="@dimen/gap_medium"
+                    android:layout_marginTop="@dimen/gap_medium"
+                    app:backgroundTint="@color/color_blue_secondary"
+                    android:text="@string/add_email" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="fill"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/section_email">
+
+                <TextView
+                    android:id="@+id/view_more"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginRight="@dimen/gap_small"
+                    android:layout_marginLeft="@dimen/gap_small"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/label_view_more"
+                    android:textSize="@dimen/text_size_primary"
+                    android:drawableEnd="@drawable/ic_baseline_arrow_drop_down"
+                    android:clickable="true"
+                    app:drawableTint="@color/color_mute"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/section_more"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/icon_event"
+                        android:layout_width="@dimen/clickable_icon_size_tiny"
+                        android:layout_height="@dimen/clickable_icon_size_tiny"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/ic_baseline_calendar_month"
+                        app:tint="@color/color_mute"/>
+
+                    <LinearLayout
+                        android:id="@+id/section_event"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toEndOf="@id/icon_event"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginBottom="@dimen/gap_large"
+                        android:orientation="vertical"
+                        android:gravity="top">
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="@dimen/gap_medium"
+                            android:layout_marginLeft="@dimen/gap_medium"
+                            android:layout_marginTop="@dimen/gap_medium"
+                            app:backgroundTint="@color/color_blue_secondary"
+                            android:text="@string/add_event" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/icon_relation"
+                        android:layout_width="@dimen/clickable_icon_size_tiny"
+                        android:layout_height="@dimen/clickable_icon_size_tiny"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/section_event"
+                        app:srcCompat="@drawable/ic_baseline_relation"
+                        app:tint="@color/color_mute"/>
+
+                    <LinearLayout
+                        android:id="@+id/section_relation"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toEndOf="@id/icon_relation"
+                        app:layout_constraintTop_toBottomOf="@id/section_event"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginBottom="@dimen/gap_large"
+                        android:orientation="vertical"
+                        android:gravity="top">
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="@dimen/gap_medium"
+                            android:layout_marginLeft="@dimen/gap_medium"
+                            android:layout_marginTop="@dimen/gap_medium"
+                            app:backgroundTint="@color/color_blue_secondary"
+                            android:text="@string/add_relation" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/icon_address"
+                        android:layout_width="@dimen/clickable_icon_size_tiny"
+                        android:layout_height="@dimen/clickable_icon_size_tiny"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/section_relation"
+                        app:srcCompat="@drawable/ic_baseline_location"
+                        app:tint="@color/color_mute"/>
+
+                    <LinearLayout
+                        android:id="@+id/section_address"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toEndOf="@id/icon_address"
+                        app:layout_constraintTop_toBottomOf="@id/section_relation"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginBottom="@dimen/gap_large"
+                        android:orientation="vertical"
+                        android:gravity="top">
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="@dimen/gap_medium"
+                            android:layout_marginLeft="@dimen/gap_medium"
+                            android:layout_marginTop="@dimen/gap_medium"
+                            app:backgroundTint="@color/color_blue_secondary"
+                            android:text="@string/add_address" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/icon_organization"
+                        android:layout_width="@dimen/clickable_icon_size_tiny"
+                        android:layout_height="@dimen/clickable_icon_size_tiny"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/section_address"
+                        app:srcCompat="@drawable/ic_baseline_organization"
+                        app:tint="@color/color_mute"/>
+
+                    <LinearLayout
+                        android:id="@+id/section_organization"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toEndOf="@id/icon_organization"
+                        app:layout_constraintTop_toBottomOf="@id/section_address"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginBottom="@dimen/gap_large"
+                        android:orientation="vertical"
+                        android:gravity="top">
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="@dimen/gap_medium"
+                            android:layout_marginLeft="@dimen/gap_medium"
+                            android:layout_marginTop="@dimen/gap_medium"
+                            app:backgroundTint="@color/color_blue_secondary"
+                            android:text="@string/add_organization" />
+                    </LinearLayout>
+
+
+                    <ImageView
+                        android:id="@+id/icon_website"
+                        android:layout_width="@dimen/clickable_icon_size_tiny"
+                        android:layout_height="@dimen/clickable_icon_size_tiny"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/section_organization"
+                        app:srcCompat="@drawable/ic_baseline_http"
+                        app:tint="@color/color_mute"/>
+
+                    <LinearLayout
+                        android:id="@+id/section_website"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toEndOf="@id/icon_website"
+                        app:layout_constraintTop_toBottomOf="@id/section_organization"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginBottom="@dimen/gap_large"
+                        android:orientation="vertical"
+                        android:gravity="top">
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="@dimen/gap_medium"
+                            android:layout_marginLeft="@dimen/gap_medium"
+                            android:layout_marginTop="@dimen/gap_medium"
+                            app:backgroundTint="@color/color_blue_secondary"
+                            android:text="@string/add_website" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/icon_note"
+                        android:layout_width="@dimen/clickable_icon_size_tiny"
+                        android:layout_height="@dimen/clickable_icon_size_tiny"
+                        android:layout_marginTop="@dimen/gap_large"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/section_website"
+                        app:srcCompat="@drawable/ic_baseline_note"
+                        app:tint="@color/color_mute"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/section_note"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_large"
+                        android:hint="@string/label_note"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:layout_constraintStart_toEndOf="@id/icon_website"
+                        app:layout_constraintTop_toBottomOf="@id/section_website"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginBottom="@dimen/gap_large">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="@dimen/gap_medium"
+                            android:layout_marginLeft="@dimen/gap_medium"
+                            android:layout_marginTop="@dimen/gap_medium" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

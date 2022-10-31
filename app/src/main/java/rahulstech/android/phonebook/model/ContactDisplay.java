@@ -1,42 +1,72 @@
 package rahulstech.android.phonebook.model;
 
-import android.database.Cursor;
 import android.net.Uri;
-import android.provider.ContactsContract;
 
-import java.util.Objects;
+import java.util.Collections;
+import java.util.List;
+
+import rahulstech.android.phonebook.util.Check;
 
 public class ContactDisplay {
+    // TODO: creating section by display name has problem, display name label may be used instead
+    private Contact contact;
 
-    private long contactId;
+    private PhoneNumber phoneNumberPrimary;
 
-    private String displayName;
+    private List<PhoneNumber> phoneNumbers = Collections.EMPTY_LIST;
 
-    private Uri thumbnailUri;
+    public ContactDisplay(Contact contact, List<PhoneNumber> numbers) {
+        this.contact = contact;
+        setPhoneNumbers(numbers);
+    }
 
-    private boolean hasPhoneNumber;
-
-    public ContactDisplay(long contactId, String displayName, Uri thumbnailUri, boolean hasPhoneNumber) {
-        this.contactId = contactId;
-        this.displayName = displayName;
-        this.thumbnailUri = thumbnailUri;
-        this.hasPhoneNumber = hasPhoneNumber;
+    public Contact getContact() {
+        return contact;
     }
 
     public long getContactId() {
-        return contactId;
+        return contact.getId();
     }
 
     public String getDisplayName() {
-        return displayName;
+        return contact.getDisplayName();
     }
 
     public Uri getThumbnailUri() {
-        return thumbnailUri;
+        return contact.getPhotoUri();
     }
 
     public boolean hasPhoneNumber() {
-        return hasPhoneNumber;
+        return !phoneNumbers.isEmpty();
+    }
+
+    public List<PhoneNumber> getPhoneNumbers() {
+        return phoneNumbers;
+    }
+
+    public void setPhoneNumbers(List<PhoneNumber> phoneNumbers) {
+        this.phoneNumbers = phoneNumbers;
+        if (null == phoneNumbers) this.phoneNumbers = Collections.EMPTY_LIST;
+        List<PhoneNumber> numbers = this.phoneNumbers;
+        PhoneNumber primary = null;
+        if (numbers.size()==1) primary = numbers.get(0);
+        else {
+            for (PhoneNumber pn : numbers) {
+                if (pn.isPrimary()) {
+                    primary = pn;
+                    break;
+                }
+            }
+        }
+        this.phoneNumberPrimary = primary;
+    }
+
+    public boolean hasPhoneNumberPrimary() {
+        return null != phoneNumberPrimary;
+    }
+
+    public PhoneNumber getPhoneNumberPrimary() {
+        return phoneNumberPrimary;
     }
 
     @Override
@@ -44,32 +74,7 @@ public class ContactDisplay {
         if (this == o) return true;
         if (!(o instanceof ContactDisplay)) return false;
         ContactDisplay that = (ContactDisplay) o;
-        return contactId == that.contactId && hasPhoneNumber == that.hasPhoneNumber && Objects.equals(displayName, that.displayName) && Objects.equals(thumbnailUri, that.thumbnailUri);
-    }
-
-    public static ContactDisplay create(Cursor c) {
-        try {
-            int _iID = c.getColumnIndexOrThrow(ContactsContract.Contacts._ID);
-            int _iDisplayNamePrimary = c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY);
-            int _iPhotoThumbUri = c.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI);
-            int _iHasPhoneNumber = c.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER);
-
-            long contactId = c.getLong(_iID);
-            String displayName = c.getString(_iDisplayNamePrimary);
-            Uri thumbnailUri = c.isNull(_iPhotoThumbUri) ? null : Uri.parse(c.getString(_iPhotoThumbUri));
-            boolean hasPhoneNumber = 1 == c.getInt(_iHasPhoneNumber);
-
-            ContactDisplay contact = new ContactDisplay(
-                    contactId,
-                    displayName,
-                    thumbnailUri,
-                    hasPhoneNumber
-            );
-
-            return contact;
-        }
-        catch (Exception ex) {
-            throw new ModelException("can not create mode",ex);
-        }
+        return Check.isEquals(contact,that.contact)
+                && Check.isEquals(phoneNumbers,that.phoneNumbers);
     }
 }

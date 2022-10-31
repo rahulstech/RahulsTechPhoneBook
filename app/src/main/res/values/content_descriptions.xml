@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="action_button_voice_call_description">make a voice call </string>
+    <string name="action_button_video_call_description">make a video call</string>
+    <string name="action_button_sms_description">send sms</string>
+    <string name="action_button_email_description">send email</string>
+    <string name="action_button_remove_description">remove item</string>
+</resources>

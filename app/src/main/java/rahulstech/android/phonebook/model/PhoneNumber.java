@@ -1,67 +1,97 @@
 package rahulstech.android.phonebook.model;
 
-import android.database.Cursor;
+import android.content.res.Resources;
 import android.provider.ContactsContract;
 
+import rahulstech.android.phonebook.util.Check;
 
 public class PhoneNumber {
 
-    private long contactId;
-
-    private long rawContactId;
+    private String lookupKey;
 
     private long id;
 
-    private String phoneNumber;
+    private String number;
+
+    private boolean primary;
 
     private int type;
 
-    public PhoneNumber(long contactId, long rawContactId, long id, String phoneNumber, int type) {
-        this.contactId = contactId;
-        this.rawContactId = rawContactId;
+    private CharSequence typeLable;
+
+    public PhoneNumber(String lookupKey, long id, String number, boolean primary, int type, CharSequence typeLable) {
+        this.lookupKey = lookupKey;
         this.id = id;
-        this.phoneNumber = phoneNumber;
+        this.number = number;
+        this.primary = primary;
         this.type = type;
+        this.typeLable = typeLable;
     }
 
-    public long getContactId() {
-        return contactId;
+    public PhoneNumber() {}
+
+    public String getLookupKey() {
+        return lookupKey;
     }
 
-    public long getRawContactId() {
-        return rawContactId;
+    public void setLookupKey(String lookupKey) {
+        this.lookupKey = lookupKey;
     }
 
     public long getId() {
         return id;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 
     public int getType() {
         return type;
     }
 
-    public static PhoneNumber create(Cursor c) {
-        try {
-            int _iContactId = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
-            int _iRawContactId = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID);
-            int _iId = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone._ID);
-            int _iNumber = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            int _iType = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE);
+    public void setType(int type) {
+        this.type = type;
+    }
 
-            long contactId = c.getLong(_iContactId);
-            long rawContactId = c.getLong(_iRawContactId);
-            long id = c.getLong(_iId);
-            String number = c.getString(_iNumber);
-            int type = c.getInt(_iType);
+    public CharSequence getTypeLabel() {
+        return typeLable;
+    }
 
-            return new PhoneNumber(contactId,rawContactId,id,number,type);
-        }
-        catch (Exception ex) {
-            throw new ModelException("can not create PhoneNumber",ex);
-        }
+    public void setTypeLable(CharSequence typeLable) {
+        this.typeLable = typeLable;
+    }
+
+    public CharSequence getTypeLabel(Resources res) {
+        return ContactsContract.CommonDataKinds.Phone.getTypeLabel(res,type,typeLable);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PhoneNumber)) return false;
+        PhoneNumber number1 = (PhoneNumber) o;
+        return id == number1.id
+                && primary == number1.primary
+                && type == number1.type
+                && Check.isEquals(lookupKey, number1.lookupKey)
+                && Check.isEquals(number, number1.number)
+                && Check.isEquals(typeLable, number1.typeLable);
     }
 }

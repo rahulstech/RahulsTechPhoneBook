@@ -1,34 +1,37 @@
 package rahulstech.android.phonebook.model;
 
-import android.database.Cursor;
+import android.content.res.Resources;
 import android.provider.ContactsContract;
 
+import rahulstech.android.phonebook.util.Check;
+
 public class Email {
-
-    private long contactId;
-
-    private long rawContactId;
-
+    
+    private String lookupKey;
+    
     private long id;
 
     private String address;
 
+    private boolean primary;
+
     private int type;
 
-    public Email(long contactId, long rawContactId, long id, String address, int type) {
-        this.contactId = contactId;
-        this.rawContactId = rawContactId;
+    private CharSequence typeLabel;
+
+    public Email(String lookupKey, long id, String address, boolean primary, int type, CharSequence typeLabel) {
+        this.lookupKey = lookupKey;
         this.id = id;
         this.address = address;
+        this.primary = primary;
         this.type = type;
+        this.typeLabel = typeLabel;
     }
 
-    public long getContactId() {
-        return contactId;
-    }
+    public Email() {}
 
-    public long getRawContactId() {
-        return rawContactId;
+    public String getLookupKey() {
+        return lookupKey;
     }
 
     public long getId() {
@@ -39,28 +42,48 @@ public class Email {
         return address;
     }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
     public int getType() {
         return type;
     }
 
-    public static Email create(Cursor c) {
-        try {
-            int _iContactId = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
-            int _iRawContactId = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.RAW_CONTACT_ID);
-            int _iId = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email._ID);
-            int _iAddress = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS);
-            int _iType = c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.TYPE);
+    public void setType(int type) {
+        this.type = type;
+    }
 
-            long contactId = c.getLong(_iContactId);
-            long rawContactId = c.getLong(_iRawContactId);
-            long id = c.getLong(_iId);
-            String address = c.getString(_iAddress);
-            int type = c.getInt(_iType);
+    public CharSequence getTypeLabel() {
+        return typeLabel;
+    }
 
-            return new Email(contactId,rawContactId,id,address,type);
-        }
-        catch (Exception ex) {
-            throw new ModelException("can not create Email",ex);
-        }
+    public void setTypeLabel(CharSequence typeLabel) {
+        this.typeLabel = typeLabel;
+    }
+
+    public CharSequence getTypeLabel(Resources res) {
+        return ContactsContract.CommonDataKinds.Email.getTypeLabel(res,type,typeLabel);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Email)) return false;
+        Email email = (Email) o;
+        return id == email.id
+                && primary == email.primary
+                && type == email.type
+                && Check.isEquals(lookupKey, email.lookupKey)
+                && Check.isEquals(address, email.address)
+                && Check.isEquals(typeLabel, email.typeLabel);
     }
 }

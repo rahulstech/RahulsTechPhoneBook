@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="message_remove">%1$s will be removed permanently</string>
+    <string name="message_permission_not_granted">permission not granted</string>
+    <string name="message_save_fail">not saved</string>
+</resources>

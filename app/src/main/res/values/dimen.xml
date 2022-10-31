@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <dimen name="text_size_primary">20sp</dimen>
+    <dimen name="text_size_secondary_small">14sp</dimen>
+    <dimen name="text_size_secondary">18sp</dimen>
+
     <dimen name="horizontal_divider_width">1dp</dimen>
+
+    <dimen name="clickable_icon_size_atomic">24dp</dimen>
+    <dimen name="clickable_icon_size_tiny">32dp</dimen>
+    <dimen name="clickable_icon_size_small">48dp</dimen>
+    <dimen name="clickable_icon_size_medium">64dp</dimen>
+    <dimen name="clickable_icon_size_large">80dp</dimen>
+    <dimen name="clickable_icon_size_xlarge">96dp</dimen>
+    <dimen name="clickable_icon_size_xxlarge">112dp</dimen>
+
+    <dimen name="gap_atomic">3dp</dimen>
+    <dimen name="gap_tiny">6dp</dimen>
+    <dimen name="gap_small">10dp</dimen>
+    <dimen name="gap_medium">18dp</dimen>
+    <dimen name="gap_large">30dp</dimen>
 
 </resources>
