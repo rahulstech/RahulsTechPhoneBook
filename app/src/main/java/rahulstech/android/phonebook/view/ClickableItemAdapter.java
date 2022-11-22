@@ -58,7 +58,9 @@ public abstract class ClickableItemAdapter<T,VH extends ClickableItemAdapter.Cli
     }
 
     public T getItem(int position) {
-        return mDiffer.getCurrentList().get(position);
+        if (0<=position && position<getItemCount())
+            return mDiffer.getCurrentList().get(position);
+        return null;
     }
 
     @Override

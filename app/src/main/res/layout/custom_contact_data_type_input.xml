@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<EditText xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/edittext"
+<com.google.android.material.textfield.TextInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/gap_large"
     android:layout_marginBottom="@dimen/gap_large"
-    android:layout_marginLeft="@dimen/gap_tiny"
-    android:layout_marginRight="@dimen/gap_tiny"
-    android:inputType="text">
+    android:layout_marginLeft="@dimen/gap_small"
+    android:layout_marginRight="@dimen/gap_small"
+    app:hintEnabled="true"
+    app:hintAnimationEnabled="true"
+    android:hint="@string/label_label">
 
-</EditText>
+    <com.google.android.material.textfield.TextInputEditText xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/edittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:inputType="text"
+        tools:text="Custom"/>
+
+</com.google.android.material.textfield.TextInputLayout>

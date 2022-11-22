@@ -16,12 +16,23 @@
             android:name=".ContactInputActivity"
             android:exported="false">
             <intent-filter>
+                <action android:name="android.intent.action.INSERT_OR_EDIT"/>
+                <action android:name="android.intent.action.EDIT"/>
+                <data android:scheme="content" android:host="com.android.contacts" android:mimeType="vnd.android.cursor.item/contact" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.INSERT"/>
+                <action android:name="android.intent.action.INSERT_OR_EDIT"/>
+                <data android:mimeType="vnd.android.cursor.dir/raw_contact" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ContactDetailsActivity"
-            android:exported="false">
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:scheme="content" android:host="com.android.contacts" android:mimeType="vnd.android.cursor.dir/contact"/>
+            </intent-filter>
         </activity>
         <activity
             android:name=".ContactsListActivity"

@@ -3,4 +3,8 @@
     <string name="message_remove">%1$s will be removed permanently</string>
     <string name="message_permission_not_granted">permission not granted</string>
     <string name="message_save_fail">not saved</string>
+    <string name="message_contact_not_loaded">contact not loaded</string>
+    <string name="message_save_nothing">nothing to save</string>
+    <string name="message_contact_load_error">error loading contact</string>
+
 </resources>

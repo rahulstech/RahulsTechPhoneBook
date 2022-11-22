@@ -1,545 +1,506 @@
 package rahulstech.android.phonebook;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import rahulstech.android.phonebook.concurrent.AsyncTask;
-import rahulstech.android.phonebook.model.ContactDetails;
-import rahulstech.android.phonebook.model.Email;
-import rahulstech.android.phonebook.model.Event;
-import rahulstech.android.phonebook.model.PhoneNumber;
-import rahulstech.android.phonebook.model.Relation;
-import rahulstech.android.phonebook.util.Check;
-import rahulstech.android.phonebook.view.ContactDataInputBottomSheet;
-import rahulstech.android.phonebook.view.ContactDataTypeAdapter;
-import rahulstech.android.phonebook.view.ContactEmailAdapter;
-import rahulstech.android.phonebook.view.ContactEventAdapter;
-import rahulstech.android.phonebook.view.ContactPhoneNumberAdapter;
-import rahulstech.android.phonebook.view.ContactRelationAdapter;
-import rahulstech.android.phonebook.view.OnListItemClickListener;
-import rahulstech.android.phonebook.view.OnListItemLongClickListener;
-import rahulstech.android.phonebook.viewmodel.ContactDetailsViewModel;
-
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
+import android.widget.CheckBox;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
-import com.google.android.material.chip.ChipGroup;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
-public class ContactDetailsActivity extends AppCompatActivity implements View.OnClickListener {
+import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+import rahulstech.android.phonebook.concurrent.AsyncTask;
+import rahulstech.android.phonebook.model.ContactDetails;
+import rahulstech.android.phonebook.model.Email;
+import rahulstech.android.phonebook.model.Event;
+import rahulstech.android.phonebook.model.Note;
+import rahulstech.android.phonebook.model.Organization;
+import rahulstech.android.phonebook.model.PhoneNumber;
+import rahulstech.android.phonebook.model.PostalAddress;
+import rahulstech.android.phonebook.model.Relation;
+import rahulstech.android.phonebook.model.Website;
+import rahulstech.android.phonebook.repository.ContactRepository;
+import rahulstech.android.phonebook.util.Check;
+import rahulstech.android.phonebook.util.DateTimeUtil;
+import rahulstech.android.phonebook.util.OpenActivity;
+import rahulstech.android.phonebook.viewmodel.ContactViewModel;
+
+public class ContactDetailsActivity extends PhoneBookActivity {
 
     // TODO: viewing custom data types not implemented
     // like whatsapp and telegram account linked to account
 
+    // TODO: contact loading delay: either show loading view or load contact data separately
+
+    // TODO: layout improvement required
+
+    // TODO: unimplemented clicks
+
     private static final String TAG = "ContactDetailsActivity";
 
-    public static final String EXTRA_LOOKUP_KEY = "lookup_key";
-
-    ContactDetailsViewModel vm;
-
     ImageView contactPhoto;
-    TextView displayName;
-    TextView numberPrimary;
+    CheckBox contactStar;
+    TextView contactName;
 
-    View sectionActionButtonsPrimary;
-    ImageButton btnVoiceCallPrimary;
-    ImageButton btnSmsPrimary;
-    ImageButton btnVideoCallPrimary;
-    ImageButton btnEmailPrimary;
+    Toolbar toolbar;
 
-    View sectionNumber;
-    RecyclerView phoneNumbers;
-    View btnActionAddNumber;
-    ContactPhoneNumberAdapter phoneNumberAdapter;
+    ContactViewModel vm;
 
-    View sectionEmail;
-    RecyclerView emails;
-    View btnActionAddEmail;
-    ContactEmailAdapter emailAdapter;
-
-    ChipGroup sectionThumbs;
-
-    View sectionOthers;
-    RecyclerView otherRecyclerView;
-    TextView otherTextView;
-    TextView otherSectionLabel;
-    View btnActionOtherAdd;
-
-    ContactRelationAdapter relationAdapter;
-    ContactEventAdapter eventAdapter;
-
-    String voice_call_number = null;
-    String video_call_number = null;
+    ContactDetails details = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_details);
 
-        vm = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(ContactDetailsViewModel.class);
+        vm = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(ContactViewModel.class);
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         contactPhoto = findViewById(R.id.contact_photo);
-        displayName = findViewById(R.id.display_name);
-        numberPrimary = findViewById(R.id.number_primary);
+        contactStar = findViewById(R.id.contact_star);
+        contactStar.setOnClickListener(v->{
+            final boolean checked = contactStar.isChecked();
+            if (null != details){
+                details.getContact();
+                AsyncTask.execute(()->ContactRepository.get(this).getContactRepositoryOperation().setContactStarred(details.getContact(),checked),
+                        new AsyncTask.AsyncTaskCallback(){
+                            @Override
+                            public void onError(AsyncTask task) {
+                                Log.e(TAG,null,task.getError());
+                            }
 
-        sectionActionButtonsPrimary = findViewById(R.id.section_action_buttons_primary);
-        btnVoiceCallPrimary = findViewById(R.id.action_voice_call_primary);
-        btnSmsPrimary = findViewById(R.id.action_sms_primary);
-        btnVideoCallPrimary = findViewById(R.id.action_video_call_primary);
-        btnEmailPrimary = findViewById(R.id.action_email_primary);
+                            @Override
+                            public void onResult(AsyncTask task) {
+                                boolean saved = task.getResult();
+                                if (!saved) {
+                                    contactStar.setChecked(!checked);
+                                }
+                            }
+                        });
+            }
+        });
+        contactName = findViewById(R.id.display_name);
 
-        sectionThumbs = findViewById(R.id.section_thumbs);
-        sectionThumbs.setOnCheckedStateChangeListener(onSectionChanged);
-
-        initSectionNumber();
+        initSectionPhoneNumber();
 
         initSectionEmail();
 
-        initSectionOthers();
+        initSectionEvents();
 
-        btnVoiceCallPrimary.setOnClickListener(this);
-        btnSmsPrimary.setOnClickListener(this);
-        btnVideoCallPrimary.setOnClickListener(this);
-        btnEmailPrimary.setOnClickListener(this);
+        initSectionRelatives();
 
-        if (hasRequiredPermissions()) loadContactDetails();
-        else vm.addHaltedTask(()->loadContactDetails());
-    }
+        initSectionAddress();
 
-    void initSectionNumber() {
-        sectionNumber = findViewById(R.id.section_number);
-        phoneNumbers = sectionNumber.findViewById(R.id.recyclerview);
+        initSectionOrganization();
 
-        LinearLayoutManager lm = new LinearLayoutManager(this);
-        lm.setOrientation(RecyclerView.VERTICAL);
-        phoneNumbers.setLayoutManager(lm);
+        initSectionWebsite();
 
-        phoneNumberAdapter = new ContactPhoneNumberAdapter(this);
-        phoneNumberAdapter.setOnListItemClickListener(onClickPhoneNumber);
-        phoneNumberAdapter.setOnListItemLongClickListener(onLongClickPhoneNumber);
-        phoneNumbers.setAdapter(phoneNumberAdapter);
-
-        phoneNumbers.setVisibility(View.VISIBLE);
-
-        btnActionAddNumber = sectionNumber.findViewById(R.id.action_add);
-        btnActionAddNumber.setOnClickListener(onAddNumber);
-
-        TextView sectionLabel = sectionNumber.findViewById(R.id.section_label);
-        sectionLabel.setText(R.string.label_mobile);
+        initSectionNote();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (!hasRequiredPermissions()) {
-            requestRequiredPermissions();
-        }
-    }
-
-    void initSectionEmail() {
-        sectionEmail = findViewById(R.id.section_email);
-        emails = sectionEmail.findViewById(R.id.recyclerview);
-
-        LinearLayoutManager lm = new LinearLayoutManager(this);
-        lm.setOrientation(RecyclerView.VERTICAL);
-        emails.setLayoutManager(lm);
-
-        emailAdapter = new ContactEmailAdapter(this);
-        emailAdapter.setOnListItemClickListener(onClickEmail);
-        emails.setAdapter(emailAdapter);
-
-        emails.setVisibility(View.VISIBLE);
-
-        btnActionAddEmail = sectionEmail.findViewById(R.id.action_add);
-        btnActionAddEmail.setOnClickListener(onAddEmail);
-
-        TextView sectionLabel = sectionEmail.findViewById(R.id.section_label);
-        sectionLabel.setText(R.string.label_email);
-    }
-
-    void initSectionOthers() {
-        sectionOthers = findViewById(R.id.section_content);
-        btnActionOtherAdd = sectionOthers.findViewById(R.id.action_add);
-        otherRecyclerView = sectionOthers.findViewById(R.id.recyclerview);
-
-        GridLayoutManager gm = new GridLayoutManager(this,getResources().getInteger(R.integer.contact_details_grid_item_count));
-        otherRecyclerView.setLayoutManager(gm);
-
-        relationAdapter = new ContactRelationAdapter(this);
-        relationAdapter.setOnListItemClickListener(onClickRelation);
-
-        eventAdapter = new ContactEventAdapter(this);
-        eventAdapter.setOnListItemClickListener(onClickEvent);
-
-        otherTextView = sectionOthers.findViewById(R.id.textview);
-        otherSectionLabel = sectionOthers.findViewById(R.id.section_label);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.contact_details_top_menu,menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public void onClick(View v) {
-        ContactDetails details = vm.getLoadedContactDetails();
-        if (details.hasPhoneNumberPrimary()) {
-            PhoneNumber pn = details.getPhoneNumberPrimary();
-            if (v == btnVoiceCallPrimary) {
-                makeVoiceCall(pn.getNumber());
-            }
-            else if (v == btnSmsPrimary) {
-                sendSms(pn.getNumber());
-            }
-            else if (v == btnVideoCallPrimary){
-                makeVideoCall(pn.getNumber());
-            }
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.delete) {
+            onDeleteContact();
         }
-        else if (details.hasEmailPrimary() && v == btnEmailPrimary) {
-            sendEmail(details.getEmailPrimary().getAddress());
+        else if (id == R.id.edit) {
+            onEditContact();
         }
+        return super.onOptionsItemSelected(item);
     }
 
-    private void loadContactDetails() {
-        String lookupKey = getIntent().getStringExtra(EXTRA_LOOKUP_KEY);
-        vm.findContactDetailsByLookupKey(lookupKey).observe(this, this::onContactDetailsLoaded);
-    }
-
-    private AsyncTask.AsyncTaskCallback<Boolean> CONTACT_DATA_SAVE_ERROR_CALLBACK = new AsyncTask.AsyncTaskCallback<Boolean>() {
-        @Override
-        public void onError(Throwable error) {
-            Toast.makeText(ContactDetailsActivity.this,R.string.message_save_fail,Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    private OnListItemClickListener onClickPhoneNumber = (a, c, p, t) -> {
-        int viewId = c.getId();
-        PhoneNumber pn = phoneNumberAdapter.getItem(p);
-        String number = pn.getNumber();
-        if (viewId == R.id.action_voice_call) {
-            makeVoiceCall(number);
-        }
-        else if (viewId == R.id.action_sms) {
-            sendSms(number);
-        }
-        else if (viewId == R.id.action_video_call) {
-            makeVideoCall(number);
-        }
-        else if (viewId == R.id.action_remove) {
-            onRemoveContactData(getString(R.string.message_remove,number),()->vm.removePhoneNumber(pn));
-        }
-    };
-
-    private OnListItemLongClickListener onLongClickPhoneNumber = (a,c,p,t) -> {
-        Log.d(TAG,"long clicked phone number @"+p);
-        // TODO: show context menu with option set as default
-
-        PhoneNumber pn = phoneNumberAdapter.getItem(p);
-        vm.setPrimary(pn);
-        return true;
-    };
-
-    private View.OnClickListener onAddNumber = v -> {
-        ContactDataInputBottomSheet.forPhoneNumber(
-                this,
-                getString(R.string.add_number),
-                null,
-                (button, vh) -> {
-                    String _number = vh.edittext.getText().toString();
-                    if (Check.isEmptyString(_number)) {
-                        Toast.makeText(ContactDetailsActivity.this, R.string.message_save_nothing, Toast.LENGTH_SHORT).show();
-                    } else {
-                        ContactDetails details = vm.getLoadedContactDetails();
-                        ContactDataTypeAdapter.ContactDataType type = (ContactDataTypeAdapter.ContactDataType) vh.types.getSelectedItem();
-                        PhoneNumber pn = new PhoneNumber();
-                        pn.setNumber(_number);
-                        pn.setType(type.getType());
-                        pn.setTypeLable(type.getLabel());
-                        onAddContactData(()->vm.addPhoneNumber(details, pn,CONTACT_DATA_SAVE_ERROR_CALLBACK));
-                    }
-                    return true;
-                }, null);
-    };
-
-    private OnListItemClickListener onClickEmail = (a,c,p,t) -> {
-        int vid = c.getId();
-        Email email = emailAdapter.getItem(p);
-        String address = email.getAddress();
-        if (vid == R.id.action_remove) {
-            onRemoveContactData(getString(R.string.message_remove,address),()->vm.removeEmail(email));
+    @Override
+    public void onAllPermissionsGranted(int requestCode) {
+        super.onAllPermissionsGranted(requestCode);
+        if (CONTACT_PERMISSION_CODE == requestCode) {
+            loadContact();
         }
         else {
-            sendEmail(address);
-        }
-    };
-
-    private View.OnClickListener onAddEmail = v -> {
-        ContactDataInputBottomSheet.forEmail(this,getString(R.string.add_email),null,(btn,vh)-> {
-            String _address = vh.edittext.getText().toString();
-            if (Check.isEmptyString(_address)) {
-                Toast.makeText(ContactDetailsActivity.this,R.string.message_save_nothing,Toast.LENGTH_SHORT).show();
+            if (vm.hasAnyHaltedTask()) {
+                vm.getHaltedTask().run();
+                vm.removeHaltedTask();
             }
-            else {
-                ContactDetails details = vm.getLoadedContactDetails();
-                ContactDataTypeAdapter.ContactDataType type = (ContactDataTypeAdapter.ContactDataType) vh.types.getSelectedItem();
-                Email email = new Email();
-                email.setAddress(_address);
-                email.setType(type.getType());
-                email.setTypeLabel(type.getLabel());
-                onAddContactData(()->vm.addEmail(details,email,CONTACT_DATA_SAVE_ERROR_CALLBACK));
-            }
-            return true;
-        },null);
-    };
-
-    private OnListItemClickListener onClickRelation = (a,c,p,t) -> {
-        int vid = c.getId();
-        Relation relation = relationAdapter.getItem(p);
-        if (vid == R.id.action_remove) {
-            onRemoveContactData(getString(R.string.message_remove,relation.getDisplayName()),()->vm.removeRelation(relation));
-        }
-        else {
-            Intent i = new Intent(this,ContactDetailsActivity.class);
-            i.putExtra(EXTRA_LOOKUP_KEY,relation.getRelativeContactLookupKey());
-            startActivity(i);
-        }
-    };
-
-    private View.OnClickListener onAddRelation = v -> {
-        ContactDataInputBottomSheet.forRelation(this,getString(R.string.add_relation),null, (btn,vh)->{
-            String _name = vh.edittext.getText().toString();
-            if (Check.isEmptyString(_name)) {
-                Toast.makeText(ContactDetailsActivity.this,R.string.message_save_nothing,Toast.LENGTH_SHORT).show();
-            }
-            else {
-                ContactDetails details = vm.getLoadedContactDetails();
-                ContactDataTypeAdapter.ContactDataType type = (ContactDataTypeAdapter.ContactDataType) vh.types.getSelectedItem();
-                Relation r = new Relation();
-                r.setDisplayName(_name);
-                r.setType(type.getType());
-                r.setTypeLabel(type.getLabel());
-                onAddContactData(()->vm.addRelation(details,r,CONTACT_DATA_SAVE_ERROR_CALLBACK));
-            }
-            return true;
-        },null);
-    };
-
-    private OnListItemClickListener onClickEvent = (a,c,p,t) -> {
-        int vid = c.getId();
-        Event event = eventAdapter.getItem(p);
-        if (vid == R.id.action_remove) {
-            onRemoveContactData(getString(R.string.message_remove,event.getStartDate().toString()),()->vm.removeEvent(event));
-        }
-        else {
-            // TODO: open calendar schedules on date
-
-        }
-    };
-
-    private View.OnClickListener onAddEvent = v -> {
-
-    };
-
-    private void onAddContactData(Runnable addOperation) {
-        if (!hasRequiredPermissions()) {
-            vm.addHaltedTask(addOperation);
-            requestRequiredPermissions();
-        }
-        else {
-            addOperation.run();
         }
     }
 
-    private void onRemoveContactData(String message, Runnable removeOperation) {
-        new AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton(R.string.label_cancel, null)
-                .setNegativeButton(R.string.label_remove, (di, which) -> {
-                    if (!hasRequiredPermissions()) {
-                        vm.addHaltedTask(removeOperation);
-                        requestRequiredPermissions();
-                    }
-                    else {
-                        removeOperation.run();
-                    }
-                })
-                .show();
+    void onDeleteContact() {
+        // TODO: show delete confirmation dialog
     }
 
-    private ChipGroup.OnCheckedStateChangeListener onSectionChanged = (gr,ids) -> {
+    void onEditContact() {
+        if (!checkContactLoaded()) return;
+        OpenActivity.editContact(this,details.getContentUri());
+    }
 
-        // TODO: implement animated show hide with auto scroll
-
-        boolean selected = !ids.isEmpty();
-        if (selected) {
-            int selection = ids.get(0);
-            // TODO: show the content
-            sectionOthers.setVisibility(View.VISIBLE);
-            switch (selection) {
-                case R.id.section_relation_thumb: {
-                    prepareSectionOthers(getString(R.string.label_relation),relationAdapter,onAddRelation);
-                }
-                break;
-                case R.id.section_event_thumb: {
-                    prepareSectionOthers(getString(R.string.label_event),eventAdapter,onAddEvent);
-                }
-                break;
-                case R.id.section_note_thumb: {
-
-                }
-                default: {}
+    void loadContact() {
+        Uri data = getIntent().getData();
+        if (null == data) finish();
+        AsyncTask.execute(()-> ContactRepository.get(this).getContactRepositoryOperation().findContactDetails(data),new AsyncTask.AsyncTaskCallback(){
+            @Override
+            public void onError(AsyncTask task) {
+                Log.e(TAG,null,task.getError());
+                finish();
             }
+
+            @Override
+            public void onResult(AsyncTask task) {
+                onContactLoaded(task.getResult());
+            }
+        });
+    }
+
+    void onContactLoaded(@Nullable ContactDetails details) {
+        this.details = details;
+        if (null == details) finish();
+        Glide.with(this).load(details.getPhotoUri())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .placeholder(getRoundedTextDrawable(contactPhoto,details.getDisplayName()))
+                .into(contactPhoto);
+        contactStar.setChecked(details.getContact().isStarred());
+        if (null == contactName) {
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+            setTitle(details.getDisplayName());
         }
         else {
-            // TODO: hide the content
-            sectionOthers.setVisibility(View.GONE);
+            contactName.setText(details.getDisplayName());
         }
-    };
 
-    void prepareSectionOthers(String label, RecyclerView.Adapter<?> adapter, View.OnClickListener onHandleAdd) {
-        Log.i(TAG,"label: "+label+" adapter: "+(null == adapter ? null : "["+adapter.getClass().getSimpleName()+","+adapter.getItemCount()+"]"));
-        otherSectionLabel.setText(label);
-        otherRecyclerView.setAdapter(adapter);
-        otherTextView.setVisibility(View.GONE);
-        otherRecyclerView.setVisibility(View.VISIBLE);
-        btnActionOtherAdd.setOnClickListener(onHandleAdd);
+        prepareSectionPhoneNumber(details.getPhoneNumbers());
+
+        prepareSectionEmail(details.getEmails());
+
+        prepareSectionEvent(details.getEvents());
+
+        prepareSectionRelative(details.getRelatives());
+
+        prepareSectionAddress(details.getAddresses());
+
+        prepareSectionOrganization(details.getOrganizations());
+
+        prepareSectionWebsite(details.getWebsites());
+
+        prepareSectionNote(details.getNote());
     }
 
-    void prepareSectionOthers(String label, String text, View.OnClickListener onHandleAdd) {
-        otherSectionLabel.setText(label);
-        otherTextView.setText(text);
-        otherRecyclerView.setVisibility(View.GONE);
-        otherTextView.setVisibility(View.VISIBLE);
-        btnActionOtherAdd.setOnClickListener(onHandleAdd);
+    private Drawable getRoundedTextDrawable(@NonNull View view, String text) {
+        int radius = view.getMeasuredWidth()/2;
+        int color = ColorGenerator.MATERIAL.getRandomColor();
+        String label = text.substring(0,1);
+        return TextDrawable.builder().buildRoundRect(label,color,radius);
     }
 
-    private void makeVoiceCall(String number) {
-        if (hasRequiredPermissions()) {
-            Intent i = new Intent(Intent.ACTION_CALL);
-            i.setData(Uri.parse("tel:" + number));
-            startActivity(i);
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                         Section Phone Number                           ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionNumber;
+    GridLayout phoneNumbersList;
+
+    void initSectionPhoneNumber() {
+        sectionNumber = findViewById(R.id.section_phone_number);
+        ImageView icon = sectionNumber.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_phone,getTheme()));
+        phoneNumbersList = sectionNumber.findViewById(R.id.grid);
+        phoneNumbersList.setColumnCount(1);
+    }
+
+    void prepareSectionPhoneNumber(@Nullable List<PhoneNumber> numbers) {
+        sectionNumber.setVisibility(View.GONE);
+        phoneNumbersList.removeAllViews();
+        if (null == numbers || numbers.isEmpty()) return;
+        for (PhoneNumber number : numbers) {
+            View view = getLayoutInflater().inflate(R.layout.contact_details_phone_number,phoneNumbersList,false);
+            TextView primary = view.findViewById(R.id.text_primary);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            primary.setText(number.getNumber());
+            secondary.setText(number.getTypeLabel(getResources()));
+            view.setOnClickListener(v->onClickNumber(number));
+            view.setOnLongClickListener(v->onLongClickNumber(number));
+            view.findViewById(R.id.action_sms).setOnClickListener(v->onClickSms(number));
+            phoneNumbersList.addView(view);
+        }
+        sectionNumber.setVisibility(View.VISIBLE);
+    }
+
+    private void onClickNumber(@NonNull PhoneNumber number) {
+        makeVoiceCall(number.getNumber());
+    }
+
+    private void onClickSms(@NonNull PhoneNumber number) {
+        OpenActivity.sendSms(this,number.getNumber());
+    }
+
+    private boolean onLongClickNumber(@NonNull PhoneNumber number) {
+        return false;
+    }
+
+    void makeVoiceCall(String number) {
+        if (hasCallPermission()) {
+            OpenActivity.makeVoiceCall(this,number);
         }
         else {
             vm.addHaltedTask(()->makeVoiceCall(number));
-            requestRequiredPermissions();
+            requestCallPermission();
         }
     }
 
-    private void sendSms(String number) {
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setData(Uri.parse("sms:"+number));
-        startActionActivity(i);
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                           Section Email                                ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionEmail;
+    GridLayout emailsList;
+
+    void initSectionEmail() {
+        sectionEmail = findViewById(R.id.section_email);
+        ImageView icon = sectionEmail.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_alternate_email,getTheme()));
+        emailsList = sectionEmail.findViewById(R.id.grid);
+        emailsList.setColumnCount(1);
     }
 
-    private void sendEmail(String address) {
-        Intent i = new Intent(Intent.ACTION_SENDTO);
-        i.setData(Uri.parse("mailto:"+address));
-        startActionActivity(i);
+    void prepareSectionEmail(@Nullable List<Email> emails) {
+        sectionEmail.setVisibility(View.GONE);
+        emailsList.removeAllViews();
+        if (null == emails || emails.isEmpty()) return;
+        for (Email email : emails) {
+            View view = getLayoutInflater().inflate(R.layout.list_item_two_lines,emailsList,false);
+            TextView primary = view.findViewById(R.id.text_primary);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            primary.setText(email.getAddress());
+            secondary.setText(email.getTypeLabel(getResources()));
+            view.setOnClickListener(v->onCLickEmail(email));
+            view.setOnLongClickListener(v->onLongClickEmail(email));
+            emailsList.addView(view);
+        }
+        sectionEmail.setVisibility(View.VISIBLE);
     }
 
-    private void makeVideoCall(String number) {
-        if (hasRequiredPermissions()) {
-            Intent i = new Intent("com.android.phone.videocall");
-            i.putExtra("videoCall", true);
-            i.setData(Uri.parse("tel:" + number));
-            startActionActivity(i);
+    private void onCLickEmail(@NonNull Email email) {
+        OpenActivity.sendEmail(ContactDetailsActivity.this,email.getAddress());
+    }
+
+    private boolean onLongClickEmail(@NonNull Email email) {
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                           Section Event                                ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionEvent;
+    GridLayout eventsList;
+
+    void initSectionEvents() {
+        sectionEvent = findViewById(R.id.section_event);
+        eventsList = sectionEvent.findViewById(R.id.grid);
+        eventsList.setColumnCount(1);
+        ImageView icon = sectionEvent.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_calendar_month,getTheme()));
+    }
+
+    void prepareSectionEvent(@Nullable List<Event> events) {
+        sectionEvent.setVisibility(View.GONE);
+        eventsList.removeAllViews();
+        if (null == events || events.isEmpty()) return;
+        for (Event event : events) {
+            View view = getLayoutInflater().inflate(R.layout.list_item_two_lines,eventsList,false);
+            TextView primary = view.findViewById(R.id.text_primary);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            primary.setText(DateTimeUtil.formatContactEventStartDate(event.getStartDate(),"d-MMM-yy","MMM dd"));
+            secondary.setText(event.getTypeLabel(getResources()));
+            view.setOnClickListener(v->onClickEvent(event));
+            eventsList.addView(view);
+        }
+        sectionEvent.setVisibility(View.VISIBLE);
+    }
+
+    private void onClickEvent(@NonNull Event event) {
+        OpenActivity.viewCalender(ContactDetailsActivity.this, DateTimeUtil.inMillis(event.getStartDate()));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                           Section Relative                             ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionRelation;
+    GridLayout relativesList;
+
+    void initSectionRelatives() {
+        sectionRelation = findViewById(R.id.section_relation);
+        relativesList = sectionRelation.findViewById(R.id.grid);
+        relativesList.setColumnCount(getResources().getInteger(R.integer.contact_details_grid_item_count));
+        ImageView icon = sectionRelation.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_relation,getTheme()));
+    }
+
+    void prepareSectionRelative(@Nullable List<Relation> relations) {
+        sectionRelation.setVisibility(View.GONE);
+        relativesList.removeAllViews();
+        if (null == relations || relations.isEmpty()) return;
+        for (Relation relation : relations) {
+            View view = getLayoutInflater().inflate(R.layout.contact_details_gird_item_image_two_lines_text,relativesList,false);
+            ImageView photo = view.findViewById(R.id.imageview);
+            TextView primary = view.findViewById(R.id.text_primary);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            Glide.with(photo).load(relation.getPhotoUri())
+                    .placeholder(getRoundedTextDrawable(photo,relation.getDisplayName()))
+                    .into(photo);
+            primary.setText(relation.getDisplayName());
+            secondary.setVisibility(View.VISIBLE);
+            secondary.setText(relation.getTypeLabel(getResources()));
+            view.setOnClickListener(v->onClickRelation(relation));
+            relativesList.addView(view);
+        }
+        sectionRelation.setVisibility(View.VISIBLE);
+    }
+
+    private void onClickRelation(@NonNull Relation relation) {
+        if (null != relation.getRelationContactUri())
+            OpenActivity.viewContactDetails(ContactDetailsActivity.this,relation.getRelationContactUri());
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                           Section Addresses                            ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionAddress;
+    GridLayout addressesList;
+
+    void initSectionAddress() {
+        sectionAddress = findViewById(R.id.section_address);
+        ImageView icon = sectionAddress.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_location,getTheme()));
+        addressesList = sectionAddress.findViewById(R.id.grid);
+        addressesList.setColumnCount(getResources().getInteger(R.integer.contact_details_grid_item_count));
+    }
+
+    void prepareSectionAddress(@Nullable List<PostalAddress> addresses) {
+        sectionAddress.setVisibility(View.GONE);
+        addressesList.removeAllViews();
+        if (null == addresses || addresses.isEmpty()) return;
+        for (PostalAddress address : addresses) {
+            // TODO: initialize address views and set listeners
+        }
+        sectionAddress.setVisibility(View.VISIBLE);
+    }
+
+    private void onClickAddress(@NonNull PostalAddress address) {}
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                         Section Organization                           ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionOrganization;
+    GridLayout organizationsList;
+
+    void initSectionOrganization() {
+        sectionOrganization = findViewById(R.id.section_organization);
+        ImageView icon = sectionOrganization.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_organization,getTheme()));
+        organizationsList = sectionOrganization.findViewById(R.id.grid);
+        organizationsList.setColumnCount(getResources().getInteger(R.integer.contact_details_grid_item_count));
+    }
+
+    void prepareSectionOrganization(@Nullable List<Organization> organizations) {
+        organizationsList.setVisibility(View.GONE);
+        if (null == organizations || organizations.isEmpty()) return;
+        for (Organization org : organizations) {
+            // TODO: initialize organization views and set listeners
+        }
+        organizationsList.setVisibility(View.VISIBLE);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                           Section Website                              ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionWebsite;
+    GridLayout websitesList;
+
+    void initSectionWebsite() {
+        sectionWebsite = findViewById(R.id.section_website);
+        websitesList = sectionWebsite.findViewById(R.id.grid);
+        websitesList.setColumnCount(1);
+        ImageView icon = sectionWebsite.findViewById(R.id.section_icon);
+        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_http,getTheme()));
+    }
+
+    void prepareSectionWebsite(@Nullable List<Website> websites) {
+        websitesList.setVisibility(View.GONE);
+        if (null == websites || websites.isEmpty()) return;
+        for (Website site : websites) {
+            View view = getLayoutInflater().inflate(android.R.layout.simple_list_item_1,websitesList,true);
+            TextView primary = view.findViewById(android.R.id.text1);
+            primary.setText(site.getUrl());
+            view.setOnClickListener(v->onClickWebsite(site));
+        }
+        websitesList.setVisibility(View.VISIBLE);
+    }
+
+    private void onClickWebsite(@NonNull Website website) {}
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                           Section Note                                 ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    View sectionNote;
+    TextView note;
+
+    void initSectionNote() {
+        sectionNote = findViewById(R.id.section_note);
+        note = sectionNote.findViewById(R.id.textview);
+    }
+
+    void prepareSectionNote(Note data) {
+        boolean hasNote = null != data && !Check.isEmptyString(data.getNote());
+        if (hasNote) {
+            note.setText(data.getNote());
+            sectionNote.setVisibility(View.VISIBLE);
         }
         else {
-            vm.addHaltedTask(()->makeVideoCall(number));
-            requestRequiredPermissions();
+            sectionNote.setVisibility(View.GONE);
+            note.setText(null);
         }
     }
 
-    private void startActionActivity(Intent intent) {
-        startActivity(Intent.createChooser(intent,"Choose"));
-    }
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                              Others                                    ///
+    /////////////////////////////////////////////////////////////////////////////
 
-    private void onContactDetailsLoaded(ContactDetails details) {
-        if (null != details) {
-            vm.getContactEvents(details).observe(this,events -> eventAdapter.changeItems(events));
-            vm.getContactRelations(details).observe(this,relations -> relationAdapter.changeItems(relations));
-
-            Glide.with(this).load(details.getPhotoUri())
-                    .placeholder(R.mipmap.placeholder_contact_photo).into(contactPhoto);
-
-            displayName.setText(details.getDisplayName());
-
-            if (details.hasPhoneNumberPrimary()) {
-                btnVoiceCallPrimary.setVisibility(View.VISIBLE);
-                btnSmsPrimary.setVisibility(View.VISIBLE);
-                btnVideoCallPrimary.setVisibility(View.VISIBLE);
-                numberPrimary.setText(details.getPhoneNumberPrimary().getNumber());
-            }
-            else {
-                btnVoiceCallPrimary.setVisibility(View.GONE);
-                btnSmsPrimary.setVisibility(View.GONE);
-                btnVideoCallPrimary.setVisibility(View.GONE);
-                numberPrimary.setText(null);
-            }
-            if (details.hasEmailPrimary()) {
-                btnEmailPrimary.setVisibility(View.VISIBLE);
-            }
-            else {
-                btnEmailPrimary.setVisibility(View.GONE);
-            }
-            phoneNumberAdapter.changeItems(details.getPhoneNumbers());
-            emailAdapter.changeItems(details.getEmails());
-        }
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    ///                                  Runtime Permission                                     ///
-    //////////////////////////////////////////////////////////////////////////////////////////////
-
-    private static final int PERMISSION_CODE = 1;
-
-    private static final String[] PERMISSIONS = new String[]{
-            Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS,
-            Manifest.permission.CALL_PHONE
-    };
-
-    private boolean hasRequiredPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // ask runtime permission for sdk >= 23
-            for (String permission : PERMISSIONS) {
-                if (PackageManager.PERMISSION_DENIED
-                        == ActivityCompat.checkSelfPermission(this,permission))
-                    return false;
-            }
+    boolean checkContactLoaded() {
+        if (null == details) {
+            Toast.makeText(this,R.string.message_contact_not_loaded,Toast.LENGTH_SHORT).show();
+            return false;
         }
         return true;
-    }
-
-    private void requestRequiredPermissions() {
-        ActivityCompat.requestPermissions(this,PERMISSIONS,PERMISSION_CODE);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (PERMISSION_CODE == requestCode) {
-            if (hasRequiredPermissions()) {
-                if (vm.hasAnyHaltedTask()) {
-                    vm.getHaltedTask().run();
-                    vm.removeHaltedTask();
-                }
-            }
-            else {
-                Toast.makeText(this,R.string.message_permission_not_granted,Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
     }
 }

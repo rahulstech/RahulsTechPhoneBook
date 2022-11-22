@@ -10,30 +10,25 @@ import android.content.Context;
 import android.content.SyncAdapterType;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.provider.ContactsContract;
 import android.util.Log;
 
-import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
 import rahulstech.android.phonebook.concurrent.AppExecutors;
-import rahulstech.android.phonebook.model.Account;
+import rahulstech.android.phonebook.model.RawContact;
 import rahulstech.android.phonebook.model.Contact;
-import rahulstech.android.phonebook.model.ContactDetails;
 import rahulstech.android.phonebook.model.ContactDisplay;
 import rahulstech.android.phonebook.model.Email;
 import rahulstech.android.phonebook.model.Event;
+import rahulstech.android.phonebook.model.Name;
 import rahulstech.android.phonebook.model.Note;
 import rahulstech.android.phonebook.model.Organization;
 import rahulstech.android.phonebook.model.PhoneNumber;
@@ -41,7 +36,6 @@ import rahulstech.android.phonebook.model.PostalAddress;
 import rahulstech.android.phonebook.model.Relation;
 import rahulstech.android.phonebook.model.Website;
 import rahulstech.android.phonebook.util.Check;
-import rahulstech.android.phonebook.util.DateTimeUtil;
 
 public class ContactRepository {
 
@@ -52,9 +46,6 @@ public class ContactRepository {
     private Context appContext;
     private ContentResolver contactsProvider;
     private Executor backgroundExecutor;
-    private InvalidationTracker mInvalidationTracker;
-
-    private Map<Class<?>, Uri[]> mModelClassContentUrisMap;
 
     private ContactRepositoryOperation mContactRepoOperation;
 
@@ -77,56 +68,17 @@ public class ContactRepository {
         return backgroundExecutor;
     }
 
-    public InvalidationTracker getInvalidationTracker() {
-        return mInvalidationTracker;
-    }
-
     private ContactRepository(Context context) {
         if (null == context) throw new NullPointerException("null == context");
         this.appContext = context.getApplicationContext();
         this.contactsProvider = this.appContext.getContentResolver();
         this.backgroundExecutor = AppExecutors.getBackgroundExecutor();
-        this.mInvalidationTracker = new InvalidationTracker(this,getConcernedContentUris());
-        prepareModelClassContentUrisMap();
-
         this.mContactRepoOperation = new ContactRepositoryOperation(this);
-    }
-
-    private Uri[] getConcernedContentUris() {
-        return new Uri[]{
-                ContactsContract.Contacts.CONTENT_URI,
-                ContactsContract.RawContacts.CONTENT_URI,
-                ContactsContract.Data.CONTENT_URI
-        };
-    }
-
-    private void prepareModelClassContentUrisMap() {
-        mModelClassContentUrisMap = new HashMap<>();
-        mModelClassContentUrisMap.put(Contact.class,new Uri[]{ContactsContract.Contacts.CONTENT_URI});
-        mModelClassContentUrisMap.put(ContactDisplay.class,new Uri[]{ContactsContract.Contacts.CONTENT_URI, ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Account.class,new Uri[]{ContactsContract.RawContacts.CONTENT_URI});
-        mModelClassContentUrisMap.put(ContactDetails.class,new Uri[]{ContactsContract.Contacts.CONTENT_URI,ContactsContract.RawContacts.CONTENT_URI,ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(PhoneNumber.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Email.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Event.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(PostalAddress.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Organization.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Relation.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Website.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
-        mModelClassContentUrisMap.put(Note.class,new Uri[]{ContactsContract.Data.CONTENT_URI});
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///                                          API Methods                                              ///
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public Uri[] getContentUrisForModelClass(Class<?> clazz) {
-        final Uri[] uris = mModelClassContentUrisMap.get(clazz);
-        if (null == uris) {
-            throw new IllegalArgumentException("no content uris map found for model class "+clazz);
-        }
-        return uris;
-    }
 
     public ContactRepositoryOperation getContactRepositoryOperation() {
         return mContactRepoOperation;
@@ -174,32 +126,11 @@ public class ContactRepository {
             Log.e(TAG,null,ex);
             accounts.clear();
         }
-        List<android.accounts.Account> list = new ArrayList<>();
-        list.addAll(accounts);
-        return list;
+        return new ArrayList<>(accounts);
     }
 
-    public long addContactData(ContentValues values) {
-        try {
-            ContentResolver resolver = this.contactsProvider;
-            Uri inserted = resolver.insert(ContactsContract.Data.CONTENT_URI,values);
-            if (null == inserted) return 0;
-            return Long.parseLong(inserted.getLastPathSegment());
-        }
-        catch (Exception ex) {
-            throw new RepositoryException("can not add content data", ex);
-        }
-    }
-
-    public int updateContactData(long dataId, ContentValues values) {
-        try {
-            ContentResolver resolver = this.contactsProvider;
-            return resolver.update(ContactsContract.Data.CONTENT_URI,values,
-                    ContactsContract.Data._ID+" = "+dataId,null);
-        }
-        catch (Exception ex) {
-            throw new RepositoryException("can not update content data", ex);
-        }
+    public Uri getLookupUri(Uri uri) {
+        return ContactsContract.Contacts.getLookupUri(contactsProvider,uri);
     }
 
     public List<Contact> loadContacts() {
@@ -207,12 +138,7 @@ public class ContactRepository {
         try {
             ContentResolver resolver = this.contactsProvider;
             c = resolver.query(ContactsContract.Contacts.CONTENT_URI,
-                    new String[]{
-                            ContactsContract.Contacts._ID,
-                            ContactsContract.Contacts.LOOKUP_KEY,
-                            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-                            ContactsContract.Contacts.PHOTO_URI
-                    },
+                    null,
                     null, null,
                     ContactsContract.Contacts.SORT_KEY_PRIMARY + " ASC");
 
@@ -221,14 +147,7 @@ public class ContactRepository {
                 while (c.moveToNext()) {
                     String photo = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI));
                     Uri photoUri = Check.isEmptyString(photo) ? null : Uri.parse(photo);
-                    contacts.add(
-                            new Contact(
-                                    c.getLong(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID)),
-                                    c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY)),
-                                    c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)),
-                                    photoUri
-                            )
-                    );
+                    contacts.add(newContact(c));
                 }
             }
             return contacts;
@@ -241,33 +160,22 @@ public class ContactRepository {
         }
     }
 
-    public Contact loadContactByLookupKey(String lookupKey) {
+    public Contact loadContact(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
-            c = resolver.query(Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI,lookupKey),
-                    new String[]{
-                            ContactsContract.Contacts._ID,
-                            ContactsContract.Contacts.LOOKUP_KEY,
-                            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-                            ContactsContract.Contacts.PHOTO_URI
-                    },
-                    null, null,
-                    ContactsContract.Contacts.SORT_KEY_PRIMARY + " ASC");
+            c = resolver.query(ContactsContract.Contacts.CONTENT_URI,
+                    null,
+                    ContactsContract.Contacts.LOOKUP_KEY+" = ? OR "+ContactsContract.Contacts._ID+" = ?",
+                    new String[]{key,key},
+                    null);
 
             if (c != null && c.moveToFirst()) {
-                String photo = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI));
-                Uri photoUri = Check.isEmptyString(photo) ? null : Uri.parse(photo);
-                return new Contact(
-                        c.getLong(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID)),
-                        c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY)),
-                        c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)),
-                        photoUri
-                );
+                return newContact(c);
             }
         }
         catch (Exception ex) {
-            throw new RepositoryException("can not load contacts",ex);
+            throw new RepositoryException("can not load contact with key="+key,ex);
         }
         finally {
             if (null != c) c.close();
@@ -275,13 +183,73 @@ public class ContactRepository {
         return null;
     }
 
-    public List<PhoneNumber> loadPhoneNumbersByLookupKey(String lookupKey) {
+    public int updateContact(long id, ContentValues values) {
+        try {
+            ContentResolver resolver = this.contactsProvider;
+            return resolver.update(ContactsContract.Contacts.CONTENT_URI,values,ContactsContract.Contacts._ID+" = "+id,null);
+        }
+        catch (Exception ex) {
+            throw new RepositoryException("contact with id="+id+" not updated",ex);
+        }
+    }
+
+    private Contact newContact(Cursor c) {
+        String photo = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI));
+        Uri photoUri = Check.isEmptyString(photo) ? null : Uri.parse(photo);
+        return new Contact(
+                c.getLong(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID)),
+                c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY)),
+                c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)),
+                photoUri,
+                1 == c.getInt(c.getColumnIndexOrThrow(ContactsContract.Contacts.STARRED))
+        );
+    }
+
+    public Name loadName(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
             c = resolver.query(ContactsContract.Data.CONTENT_URI,null,
-                    ContactsContract.Data.LOOKUP_KEY+" = ? AND "+ContactsContract.Data.MIMETYPE+" = ?",
-                    new String[]{lookupKey,ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE},
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ ContactsContract.Data.CONTACT_ID +" = ?) AND "
+                            +ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key,key,ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE},
+                    null);
+
+            if (c != null) {
+                if (c.moveToFirst()) {
+                    return new Name(
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.LOOKUP_KEY)),
+                            c.getLong(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.PREFIX)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.SUFFIX)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.PHONETIC_GIVEN_NAME)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.PHONETIC_MIDDLE_NAME)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredName.PHONETIC_FAMILY_NAME))
+                    );
+                }
+            }
+        }
+        catch (Exception ex) {
+            throw new RepositoryException("can not load Name for contact="+key,ex);
+        }
+        finally {
+            if (null != c) c.close();
+        }
+        return null;
+    }
+
+    public List<PhoneNumber> loadPhoneNumbers(String key) {
+        Cursor c = null;
+        try {
+            ContentResolver resolver = this.contactsProvider;
+            c = resolver.query(ContactsContract.Data.CONTENT_URI,null,
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ ContactsContract.Data.CONTACT_ID +" = ?) AND "
+                            +ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key,key,ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE},
                     ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY+" DESC");
 
             List<PhoneNumber> numbers = new ArrayList<>();
@@ -300,21 +268,22 @@ public class ContactRepository {
             return numbers;
         }
         catch (Exception ex) {
-            throw new RepositoryException("can not load PhoneNumber for contact="+lookupKey,ex);
+            throw new RepositoryException("can not load PhoneNumber for contact="+key,ex);
         }
         finally {
             if (null != c) c.close();
         }
     }
 
-    public List<Email> loadEmailsByLookupKey(String lookupKey) {
+    public List<Email> loadEmails(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
             c = resolver.query(ContactsContract.Data.CONTENT_URI,null,
-                    ContactsContract.Data.LOOKUP_KEY+" = ? AND "+ContactsContract.Data.MIMETYPE+" = ?",
-                    new String[]{lookupKey,ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE},
-                    null);
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ContactsContract.Data.CONTACT_ID+" = ?) AND "+
+                            ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key,key,ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE},
+                    ContactsContract.CommonDataKinds.Email.IS_SUPER_PRIMARY+" DESC");
 
             List<Email> emails = new ArrayList<>();
             if (c != null) {
@@ -334,21 +303,22 @@ public class ContactRepository {
             return emails;
         }
         catch (Exception ex) {
-            throw new RepositoryException("can not load Email for contact="+lookupKey,ex);
+            throw new RepositoryException("can not load Email for contact="+key,ex);
         }
         finally {
             if (null != c) c.close();
         }
     }
 
-    public Account loadAccountByLookupKey(String lookupKey) {
+    public RawContact loadRawContact(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
 
-            c = resolver.query(Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI,lookupKey),
+            c = resolver.query(ContactsContract.Contacts.CONTENT_URI,
                     new String[]{ContactsContract.Contacts.NAME_RAW_CONTACT_ID},
-                    null,null,null);
+                    "("+ContactsContract.Contacts.LOOKUP_KEY+" = ? OR "+ContactsContract.Contacts._ID+" = ?)",
+                    new String[]{key,key},null);
 
             long id = -1;
             if (null != c) {
@@ -369,7 +339,7 @@ public class ContactRepository {
                     },
                     null,null,null);
             if (null != c && c.moveToFirst()) {
-                return new Account(lookupKey,id,
+                return new RawContact(key,id,
                         c.getString(c.getColumnIndexOrThrow(ContactsContract.RawContacts.ACCOUNT_NAME)),
                         c.getString(c.getColumnIndexOrThrow(ContactsContract.RawContacts.ACCOUNT_TYPE)));
             }
@@ -389,7 +359,7 @@ public class ContactRepository {
             List<Contact> contacts = loadContacts();
             for (Contact c : contacts) {
                 displays.add(
-                        new ContactDisplay(c, loadPhoneNumbersByLookupKey(c.getLookupKey()))
+                        new ContactDisplay(c, loadPhoneNumbers(c.getLookupKey()))
                 );
             }
             return displays;
@@ -399,31 +369,16 @@ public class ContactRepository {
         }
     }
 
-    public ContactDetails loadContactDetailsByLookupKey(String lookupKey) {
-        try {
-            Contact contact = loadContactByLookupKey(lookupKey);
-            if (null == contact) return null;
-
-            return new ContactDetails(
-                    loadAccountByLookupKey(contact.getLookupKey()),
-                    contact,
-                    loadPhoneNumbersByLookupKey(contact.getLookupKey()),
-                    loadEmailsByLookupKey(contact.getLookupKey()));
-        }
-        catch (Exception ex) {
-            throw new RepositoryException("can not load ContactDetails",ex);
-        }
-    }
-
-    public List<Relation> loadContactRelationsByLookupKey(String lookupKey) {
+    public List<Relation> loadContactRelations(String key) {
         try {
             List<Relation> relations = new ArrayList<>();
             ContentResolver resolver = this.contactsProvider;
             try (Cursor c = resolver.query(ContactsContract.Data.CONTENT_URI,
                     null,
-                    ContactsContract.Data.LOOKUP_KEY + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-                    new String[]{String.valueOf(lookupKey), ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE},
-                    null)) {
+                    "("+ContactsContract.Data.LOOKUP_KEY + " = ? OR "+ContactsContract.Data.CONTACT_ID+" = ? ) AND "
+                            + ContactsContract.Data.MIMETYPE + " = ?",
+                    new String[]{key,key,ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE},
+                    ContactsContract.CommonDataKinds.Relation.NAME+" DESC")) {
 
                 if (null != c) {
                     while (c.moveToNext()) {
@@ -449,14 +404,15 @@ public class ContactRepository {
         }
     }
 
-    public List<Event> loadContactEventsByLookupKey(String lookupKey) {
+    public List<Event> loadContactEvents(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
             c = resolver.query(ContactsContract.Data.CONTENT_URI,
                     null,
-                    ContactsContract.Data.LOOKUP_KEY+" = ? AND "+ ContactsContract.Data.MIMETYPE+" = ?",
-                    new String[]{lookupKey, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE},
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ContactsContract.Data.CONTACT_ID+" = ?) AND "
+                            + ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key,key,ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE},
                     null);
             List<Event> events = new ArrayList<>();
             if (null != c) {
@@ -480,15 +436,16 @@ public class ContactRepository {
         }
     }
 
-    public List<PostalAddress> loadContactPostalAddressesByLookupKey(String lookupKey) {
+    public List<PostalAddress> loadContactPostalAddresses(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
             c = resolver.query(ContactsContract.Data.CONTENT_URI,
                     null,
-                    ContactsContract.Data.LOOKUP_KEY+" = ? AND "+ ContactsContract.Data.MIMETYPE+" = ?",
-                    new String[]{lookupKey, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE},
-                    ContactsContract.Data.IS_SUPER_PRIMARY+" DESC");
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ContactsContract.Data.CONTACT_ID+" = ?) AND "+
+                            ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key, key, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE},
+                    null);
             List<PostalAddress> addresses = new ArrayList<>();
             if (null != c) {
                 while (c.moveToNext()) {
@@ -518,15 +475,82 @@ public class ContactRepository {
         }
     }
 
-    public Note loadContactNoteByLookupKey(String lookupKey) {
+    public List<Organization> loadContactOrganizations(String key) {
         Cursor c = null;
         try {
             ContentResolver resolver = this.contactsProvider;
             c = resolver.query(ContactsContract.Data.CONTENT_URI,
                     null,
-                    ContactsContract.Data.LOOKUP_KEY+" = ? AND "+ ContactsContract.Data.MIMETYPE+" = ?",
-                    new String[]{lookupKey, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE},
-                    ContactsContract.Data.IS_SUPER_PRIMARY+" DESC");
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ContactsContract.Data.CONTACT_ID+" = ?) AND "+
+                            ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key, key, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE},
+                    null);
+            List<Organization> addresses = new ArrayList<>();
+            if (null != c) {
+                while (c.moveToNext()) {
+                    addresses.add(new Organization(
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.LOOKUP_KEY)),
+                            c.getLong(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization._ID)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.COMPANY)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.TITLE)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.DEPARTMENT)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.JOB_DESCRIPTION)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION)),
+                            c.getInt(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.TYPE)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Organization.LABEL))
+                    ));
+                }
+            }
+            return addresses;
+        }
+        catch (Exception ex) {
+            throw new RepositoryException("can load Organization",ex);
+        }
+        finally {
+            if(null != c) c.close();
+        }
+    }
+
+    public List<Website> loadContactWebsites(String key) {
+        Cursor c = null;
+        try {
+            ContentResolver resolver = this.contactsProvider;
+            c = resolver.query(ContactsContract.Data.CONTENT_URI,
+                    null,
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ContactsContract.Data.CONTACT_ID+" = ?) AND "+
+                            ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key, key, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE},
+                    null);
+            List<Website> addresses = new ArrayList<>();
+            if (null != c) {
+                while (c.moveToNext()) {
+                    addresses.add(new Website(
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredPostal.LOOKUP_KEY)),
+                            c.getLong(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredPostal._ID)),
+                            c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Website.URL)))
+                    );
+                }
+            }
+            return addresses;
+        }
+        catch (Exception ex) {
+            throw new RepositoryException("can load Website",ex);
+        }
+        finally {
+            if(null != c) c.close();
+        }
+    }
+
+    public Note loadContactNote(String key) {
+        Cursor c = null;
+        try {
+            ContentResolver resolver = this.contactsProvider;
+            c = resolver.query(ContactsContract.Data.CONTENT_URI,
+                    null,
+                    "("+ContactsContract.Data.LOOKUP_KEY+" = ? OR "+ContactsContract.Data.CONTACT_ID+" = ?) AND "+
+                            ContactsContract.Data.MIMETYPE+" = ?",
+                    new String[]{key, key,ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE},
+                    null);
             if (null != c && c.moveToFirst()) {
                 return new Note(
                         c.getString(c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Note.LOOKUP_KEY)),
@@ -544,82 +568,12 @@ public class ContactRepository {
         return null;
     }
 
-    public int removeContactData(String mimetype, long[] ids) {
-        try {
-            ContentResolver resolver = this.contactsProvider;
-            int length = ids.length;
-            StringBuilder selection = new StringBuilder(ContactsContract.Data.MIMETYPE+" = ? AND "+ContactsContract.Data._ID+" IN(");
-            String[] selectionArgs = new String[]{mimetype};
-            for (int i=0; i<length; i++) {
-                if (i>0) selection.append(",");
-                selection.append(ids[i]);
-            }
-            selection.append(")");
-
-            Log.d(TAG,"selection: "+selection+" mimetype: "+ mimetype);
-
-            ArrayList<ContentProviderOperation> operations = new ArrayList<>();
-            operations.add(
-                    ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-                            .withExpectedCount(length)
-                            .withSelection(selection.toString(),selectionArgs).build()
-            );
-            ContentProviderResult[] results = resolver.applyBatch(ContactsContract.Data.CONTENT_URI.getAuthority(), operations);
-            return results[0].count;
-        }
-        catch (Exception ex) {
-            throw new RepositoryException("can not remove contact data",ex);
-        }
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///                                     Private Methods                                               ///
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void loadRelativesContact(List<Relation> relations) {
-        Cursor c = null;
-        try {
-            int count = relations.size();
-            if (0 == count) return;
-
-            HashMap<String,Relation> map = new HashMap<>();
-            StringBuilder selection = new StringBuilder(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY+" IN(");
-            String[] selectionArgs = new String[count];
-            for (int i=0; i<count; i++) {
-                if (i>0) selection.append(",");
-                selection.append("?");
-                Relation r = relations.get(i);
-                String name = r.getDisplayName();
-                selectionArgs[i] = name;
-                map.put(name,r);
-            }
-            selection.append(")");
-
-            ContentResolver resolver = this.contactsProvider;
-            c = resolver.query(ContactsContract.Contacts.CONTENT_URI,new String[]{
-                    ContactsContract.Contacts.LOOKUP_KEY,
-                    ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
-                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
-            },selection.toString(),selectionArgs,null);
-
-            if (null != c) {
-                while (c.moveToNext()) {
-                    String lookupKey = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY));
-                    String name = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-                    String thumbnail = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
-                    Uri thumbnailUri = null == thumbnail ? null : Uri.parse(thumbnail);
-
-                    Relation r = map.get(name);
-                    r.setRelativeContactLookupKey(lookupKey);
-                    r.setPhotoUri(thumbnailUri);
-                }
-            }
-        }
-        catch (Exception ex) {
-            throw new RepositoryException("fail to load relation contacts",ex);
-        }
-        finally {
-            if (null != c) c.close();
-        }
+        // TODO: create a map between relation data id and relative contact lookup, if any
+        // this method much fetch contact details using the map
     }
 }

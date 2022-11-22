@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.RahulsTechPhoneBook" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.RahulsTechPhoneBook" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/color_blue_secondary</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
@@ -12,6 +12,10 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+
+
+        <item name="floatingActionButtonStyle">@style/Widget.MaterialComponents.FloatingActionButton</item>
+
     </style>
     
     <style name="Theme.RahulsTechPhoneBook.NoActionBar">
@@ -27,10 +31,14 @@
     </style>
     
     <style name="Theme.RahulsTechPhoneBook.ContactProfile">
-        <item name="cornerFamilyBottomLeft">rounded</item>
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerSizeTopLeft">0%</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopRight">0%</item>
         <item name="cornerSizeBottomLeft">20%</item>
         <item name="cornerFamilyBottomRight">rounded</item>
         <item name="cornerSizeBottomRight">20%</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 
     <style name="Theme.RahulsTechPhoneBook.ProfileActionButton">
@@ -44,11 +52,11 @@
 
     <style name="Theme.RahulsTechPhoneBook.ProfileSmallActionButton">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
-        <item name="android:layout_width">@dimen/clickable_icon_size_tiny</item>
-        <item name="android:layout_height">@dimen/clickable_icon_size_tiny</item>
+        <item name="android:layout_width">@dimen/clickable_icon_size_small</item>
+        <item name="android:layout_height">@dimen/clickable_icon_size_small</item>
         <item name="android:scaleType">fitXY</item>
-        <item name="android:layout_marginRight">@dimen/gap_tiny</item>
-        <item name="android:layout_marginLeft">@dimen/gap_tiny</item>
+        <item name="android:layout_margin">@dimen/gap_small</item>
+        <item name="android:padding">@dimen/gap_small</item>
     </style>
 
     <style name="Theme.RahulsTechPhoneBook.SectionThumb">

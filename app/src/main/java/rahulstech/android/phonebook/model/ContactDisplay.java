@@ -1,6 +1,7 @@
 package rahulstech.android.phonebook.model;
 
 import android.net.Uri;
+import android.provider.ContactsContract;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +68,10 @@ public class ContactDisplay {
 
     public PhoneNumber getPhoneNumberPrimary() {
         return phoneNumberPrimary;
+    }
+
+    public Uri getContentUri() {
+        return contact.getContentUri();
     }
 
     @Override

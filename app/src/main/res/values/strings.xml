@@ -1,7 +1,5 @@
 <resources>
 
     <string name="app_name">RahulsTechPhoneBook</string>
-    <string name="message_save_nothing">nothing to save</string>
-    <string name="label_view_more">View More</string>
 
 </resources>

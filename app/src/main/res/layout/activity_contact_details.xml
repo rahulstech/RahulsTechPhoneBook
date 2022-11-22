@@ -1,199 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="top"
-    android:background="#1746A2"
     tools:context=".ContactDetailsActivity">
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="?attr/actionBarSize">
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_marginTop="?attr/actionBarSize">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="top">
+            android:orientation="vertical">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:contentPaddingBottom="@dimen/gap_small"
-                app:cardElevation="6dp"
+                app:contentPaddingBottom="@dimen/gap_medium"
+                android:layout_marginBottom="@dimen/gap_medium"
+                app:cardElevation="2dp"
                 app:shapeAppearanceOverlay="@style/Theme.RahulsTechPhoneBook.ContactProfile">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
 
-                    <LinearLayout
-                        android:id="@+id/section_action_buttons_primary"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_horizontal"
-                        app:layout_constraintTop_toBottomOf="@id/number_primary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent">
-
-                        <ImageButton
-                            android:id="@+id/action_voice_call_primary"
-                            style="@style/Theme.RahulsTechPhoneBook.ProfileActionButton"
-                            android:layout_marginTop="20dp"
-                            android:contentDescription="@string/action_button_voice_call_description"
-                            android:src="@drawable/ic_baseline_phone"
-                            tools:visibility="visible"
-                            app:tint="@color/color_dark_yellow_green"/>
-
-                        <ImageButton
-                            android:id="@+id/action_sms_primary"
-                            style="@style/Theme.RahulsTechPhoneBook.ProfileActionButton"
-                            android:layout_marginTop="20dp"
-                            android:contentDescription="@string/action_button_video_call_description"
-                            android:src="@drawable/ic_baseline_textsms"
-                            tools:visibility="visible"
-                            app:tint="@color/color_blue"/>
-
-                        <ImageButton
-                            android:id="@+id/action_video_call_primary"
-                            style="@style/Theme.RahulsTechPhoneBook.ProfileActionButton"
-                            android:layout_marginTop="20dp"
-                            android:contentDescription="@string/action_button_sms_description"
-                            android:src="@drawable/ic_baseline_videocam"
-                            tools:visibility="visible"
-                            app:tint="@color/color_dark_yellow_green"/>
-
-                        <ImageButton
-                            android:id="@+id/action_email_primary"
-                            style="@style/Theme.RahulsTechPhoneBook.ProfileActionButton"
-                            android:layout_marginTop="20dp"
-                            android:contentDescription="@string/action_button_email_description"
-                            android:src="@drawable/ic_baseline_alternate_email"
-                            tools:visibility="visible"
-                            app:tint="@color/color_yellow"/>
-
-                    </LinearLayout>
-
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/contact_photo"
-                        android:layout_width="112dp"
-                        android:layout_height="112dp"
-                        android:layout_marginTop="70dp"
-                        app:srcCompat="@mipmap/placeholder_contact_photo"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:shapeAppearanceOverlay="@style/Theme.RahulsTechPhoneBook.RoundedPhoto"
-                        tools:src="@mipmap/placeholder_contact_photo" />
+                    <include layout="@layout/activity_contact_details_layout_screen_left"/>
 
                     <TextView
                         android:id="@+id/display_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/gap_small"
+                        android:singleLine="true"
+                        android:ellipsize="marquee"
+                        android:layout_marginTop="@dimen/gap_medium"
+                        android:paddingLeft="@dimen/gap_large"
+                        android:paddingRight="@dimen/gap_large"
                         android:textSize="@dimen/text_size_primary"
                         android:textColor="@color/black"
-                        app:layout_constraintTop_toBottomOf="@id/contact_photo"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        tools:text="Mr. Ratan Tata"/>
+                        tools:text="A very very very very very very very very large name"/>
 
-                    <TextView
-                        android:id="@+id/number_primary"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/gap_tiny"
-                        android:textSize="@dimen/text_size_secondary"
-                        android:textColor="@color/black"
-                        app:layout_constraintTop_toBottomOf="@id/display_name"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        tools:text="(+91)-1234-567-890"/>
+                </LinearLayout>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- section phone number -->
-
-            <include
-                android:id="@+id/section_number"
-                layout="@layout/contact_details_section"/>
-
-            <!-- section email -->
-
-            <include
-                android:id="@+id/section_email"
-                layout="@layout/contact_details_section"/>
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/section_thumbs"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/gap_large"
-                android:layout_marginLeft="@dimen/gap_tiny"
-                android:layout_marginRight="@dimen/gap_tiny"
-                android:orientation="horizontal"
-                app:selectionRequired="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/section_note_thumb"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_note"
-                    style="@style/Theme.RahulsTechPhoneBook.SectionThumb"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/section_event_thumb"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_event"
-                    style="@style/Theme.RahulsTechPhoneBook.SectionThumb"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/section_address_thumb"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_address"
-                    style="@style/Theme.RahulsTechPhoneBook.SectionThumb"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/section_website_thumb"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_website"
-                    style="@style/Theme.RahulsTechPhoneBook.SectionThumb"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/section_relation_thumb"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_relation"
-                    style="@style/Theme.RahulsTechPhoneBook.SectionThumb"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/section_organization_thumb"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_organization"
-                    style="@style/Theme.RahulsTechPhoneBook.SectionThumb"
-                    tools:checked="true"/>
-
-            </com.google.android.material.chip.ChipGroup>
-
-            <include
-                android:id="@+id/section_content"
-                android:visibility="gone"
-                layout="@layout/contact_details_section"
-                tools:visibility="visible"/>
+            <include layout="@layout/activity_contact_details_layout_screen_right"/>
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

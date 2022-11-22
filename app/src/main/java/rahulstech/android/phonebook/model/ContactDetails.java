@@ -2,39 +2,62 @@ package rahulstech.android.phonebook.model;
 
 import android.net.Uri;
 
-import java.util.Collections;
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.util.Check;
 
 public class ContactDetails {
 
-    private Account account;
+    private RawContact rawContact;
 
     private Contact contact;
 
-    private PhoneNumber phoneNumberPrimary;
+    private Name name;
 
-    private Email emailPrimary;
+    @Nullable
+    private List<PhoneNumber> phoneNumbers;
 
-    private List<PhoneNumber> phoneNumbers = Collections.EMPTY_LIST;
-    
-    private List<Email> emails = Collections.EMPTY_LIST;
+    @Nullable
+    private List<Email> emails;
 
+    @Nullable
+    private List<Event> events;
 
-    public ContactDetails(Account account, Contact contact, List<PhoneNumber> phoneNumbers, List<Email> emails) {
-        this.account = account;
+    @Nullable
+    private List<Relation> relatives;
+
+    @Nullable
+    private List<PostalAddress> addresses;
+
+    @Nullable
+    private List<Organization> organizations;
+
+    @Nullable
+    private List<Website> websites;
+
+    @Nullable
+    private Note note;
+
+    public ContactDetails(RawContact rawContact, Contact contact) {
+        this.rawContact = rawContact;
         this.contact = contact;
-        setPhoneNumbers(phoneNumbers);
-        setEmails(emails);
     }
 
-    public Account getAccount() {
-        return account;
+    public RawContact getAccount() {
+        return rawContact;
     }
 
     public Contact getContact() {
         return contact;
+    }
+
+    public Name getName() {
+        return name;
+    }
+
+    public void setName(Name name) {
+        this.name = name;
     }
 
     public String getDisplayName() {
@@ -45,62 +68,80 @@ public class ContactDetails {
         return contact.getPhotoUri();
     }
 
+    @Nullable
     public List<PhoneNumber> getPhoneNumbers() {
         return phoneNumbers;
     }
 
     public void setPhoneNumbers(List<PhoneNumber> phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
-        if (null == phoneNumbers) this.phoneNumbers = Collections.EMPTY_LIST;
-        if (!this.phoneNumbers.isEmpty()) {
-            this.phoneNumberPrimary = phoneNumbers.get(0);
-            for (PhoneNumber pn : this.phoneNumbers) {
-                if (pn.isPrimary()) {
-                    this.phoneNumberPrimary = pn;
-                    break;
-                }
-            }
-        }
-        else {
-            this.phoneNumberPrimary = null;
-        }
     }
 
-    public boolean hasPhoneNumberPrimary() {
-        return null != phoneNumberPrimary;
-    }
-
-    public PhoneNumber getPhoneNumberPrimary() {
-        return phoneNumberPrimary;
-    }
-
+    @Nullable
     public List<Email> getEmails() {
         return emails;
     }
 
     public void setEmails(List<Email> emails) {
         this.emails = emails;
-        if (null == emails) this.emails = Collections.EMPTY_LIST;
-        if (!this.emails.isEmpty()) {
-            this.emailPrimary = this.emails.get(0);
-            for (Email e : this.emails) {
-                if (e.isPrimary()) {
-                    this.emailPrimary = e;
-                    break;
-                }
-            }
-        }
-        else {
-            this.emailPrimary = null;
-        }
     }
 
-    public boolean hasEmailPrimary() {
-        return this.emailPrimary != null;
+    @Nullable
+    public List<Event> getEvents() {
+        return events;
     }
 
-    public Email getEmailPrimary() {
-        return emailPrimary;
+    public void setEvents(List<Event> events) {
+        this.events = events;
+    }
+
+    @Nullable
+    public List<Relation> getRelatives() {
+        return relatives;
+    }
+
+    public void setRelatives(List<Relation> relatives) {
+        this.relatives = relatives;
+    }
+
+    public void setAddresses(@Nullable List<PostalAddress> addresses) {
+        this.addresses = addresses;
+    }
+
+    @Nullable
+    public List<PostalAddress> getAddresses() {
+        return addresses;
+    }
+
+    @Nullable
+    public List<Organization> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(@Nullable List<Organization> organizations) {
+        this.organizations = organizations;
+    }
+
+    @Nullable
+    public List<Website> getWebsites() {
+        return websites;
+    }
+
+    public void setWebsites(@Nullable List<Website> websites) {
+        this.websites = websites;
+    }
+
+    public void setNote(Note note) {
+        this.note = note;
+    }
+
+    @Nullable
+    public Note getNote() {
+        return note;
+    }
+
+    public Uri getContentUri() {
+        return contact.getContentUri();
     }
 
     @Override
@@ -108,9 +149,16 @@ public class ContactDetails {
         if (this == o) return true;
         if (!(o instanceof ContactDetails)) return false;
         ContactDetails details = (ContactDetails) o;
-        return Check.isEquals(account,details.account)
+        return Check.isEquals(rawContact,details.rawContact)
                 && Check.isEquals(contact, details.contact)
+                && Check.isEquals(name,details.name)
                 && Check.isEquals(phoneNumbers, details.phoneNumbers)
-                && Check.isEquals(emails, details.emails);
+                && Check.isEquals(emails, details.emails)
+                && Check.isEquals(events,details.events)
+                && Check.isEquals(relatives,details.relatives)
+                && Check.isEquals(addresses,details.addresses)
+                && Check.isEquals(organizations,details.organizations)
+                && Check.isEquals(websites,details.websites)
+                && Check.isEquals(note,note);
     }
 }

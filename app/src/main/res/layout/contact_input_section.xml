@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="fill"
+    android:layout_marginBottom="@dimen/gap_medium"
+    android:paddingStart="@dimen/gap_medium"
+    android:paddingEnd="@dimen/gap_small"
+    android:animateLayoutChanges="true">
+
+    <LinearLayout
+        android:id="@+id/section_identity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/section_icon"
+            android:layout_width="@dimen/clickable_icon_size_tiny"
+            android:layout_height="@dimen/clickable_icon_size_tiny"
+            android:layout_weight="0"
+            app:tint="@color/color_mute"
+            tools:src="@drawable/ic_baseline_phone" />
+
+        <TextView
+            android:id="@+id/section_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/color_mute"
+            android:textSize="@dimen/text_size_secondary"
+            android:layout_marginLeft="@dimen/gap_small"
+            android:layout_marginRight="@dimen/gap_small"
+            tools:text="Number" />
+
+        <ImageButton
+            android:id="@+id/action_add"
+            android:layout_height="48dp"
+            android:layout_width="48dp"
+            android:layout_weight="0"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:srcCompat="@drawable/ic_baseline_add"
+            app:tint="@color/color_dark_yellow_green"/>
+    </LinearLayout>
+
+    <!--
+    <include layout="@layout/contact_input_data_label_close_button"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"/>
+
+    <include layout="@layout/contact_input_data_label_close_button"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"/>
+    -->
+
+    <LinearLayout
+        android:id="@+id/grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/gap_large"
+        android:paddingTop="@dimen/gap_small"
+        android:animateLayoutChanges="true"/>
+
+</LinearLayout>

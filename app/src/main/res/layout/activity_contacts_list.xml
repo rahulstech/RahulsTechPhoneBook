@@ -6,28 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".ContactsListActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize">
-
-        <EditText
-            android:id="@+id/search_contacts"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:iconifiedByDefault="true"
-            android:background="@color/white"
-            android:hint="Search Contacts"
-            android:singleLine="true"/>
-
-    </androidx.appcompat.widget.Toolbar>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contact_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?android:attr/actionBarSize"
-        tools:listitem="@layout/contact_list_item_header"/>
+        tools:listitem="@layout/contact_list_item_contact"
+        tools:itemCount="60"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_add_contact"

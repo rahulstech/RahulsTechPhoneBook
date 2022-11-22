@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- section phone numbers -->
+
+    <include android:id="@+id/section_phone_number"
+        layout="@layout/contact_details_section" />
+
+    <!-- section emails -->
+
+    <include android:id="@+id/section_email"
+        layout="@layout/contact_details_section"/>
+
+    <!-- section events -->
+
+    <include android:id="@+id/section_event"
+        layout="@layout/contact_details_section"/>
+
+    <!-- section relatives -->
+
+    <include android:id="@+id/section_relation"
+        layout="@layout/contact_details_section"/>
+
+    <!-- section addresses -->
+
+    <include android:id="@+id/section_address"
+        layout="@layout/contact_details_section"/>
+
+    <!-- section organizations -->
+
+    <include android:id="@+id/section_organization"
+        layout="@layout/contact_details_section"/>
+
+    <!-- section websites -->
+
+    <include android:id="@+id/section_website"
+        layout="@layout/contact_details_section"/>
+
+    <!-- section note -->
+
+    <LinearLayout
+        android:id="@+id/section_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gap_medium"
+        android:paddingEnd="@dimen/gap_small"
+        android:layout_marginTop="@dimen/gap_small"
+        android:layout_marginBottom="@dimen/gap_small"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/section_icon"
+            android:layout_width="@dimen/clickable_icon_size_tiny"
+            android:layout_height="@dimen/clickable_icon_size_tiny"
+            android:layout_margin="@dimen/gap_tiny"
+            android:layout_weight="0"
+            app:tint="@color/color_mute"
+            tools:src="@drawable/ic_baseline_note"/>
+
+        <TextView
+            android:id="@+id/textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/gap_small"
+            android:paddingRight="@dimen/gap_small"
+            android:textSize="@dimen/text_size_secondary"/>
+    </LinearLayout>
+
+</LinearLayout>

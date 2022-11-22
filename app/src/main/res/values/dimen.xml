@@ -2,6 +2,7 @@
 <resources>
 
     <dimen name="text_size_primary">20sp</dimen>
+    <dimen name="text_size_secondary_tiny">12sp</dimen>
     <dimen name="text_size_secondary_small">14sp</dimen>
     <dimen name="text_size_secondary">18sp</dimen>
 
@@ -20,5 +21,4 @@
     <dimen name="gap_small">10dp</dimen>
     <dimen name="gap_medium">18dp</dimen>
     <dimen name="gap_large">30dp</dimen>
-
 </resources>

@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import rahulstech.android.phonebook.model.Website;
+
 public class ContactDataTypeAdapter extends BaseAdapter {
 
     public static class ContactDataType {
@@ -30,6 +32,14 @@ public class ContactDataTypeAdapter extends BaseAdapter {
 
         public void setLabel(CharSequence label) {
             this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return "ContactDataType{" +
+                    "type=" + type +
+                    ", label=" + label +
+                    '}';
         }
     }
 
@@ -163,7 +173,7 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         return new ContactDataTypeAdapter(context,types);
     }
 
-    public static ContactDataTypeAdapter forOrganization(Context context, String customLabel) {
+    public static ContactDataTypeAdapter forOrganization(Context context, CharSequence customLabel) {
         Resources res = context.getResources();
         ContactDataType[] types = new ContactDataType[3];
 

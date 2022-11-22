@@ -19,4 +19,8 @@ public class Check {
     public static boolean isEmptyString(String text) {
         return null == text || "".equals(text);
     }
+
+    public static void isNonEmptyString(String text, String message) {
+        isTrue(!isEmptyString(text),message);
+    }
 }

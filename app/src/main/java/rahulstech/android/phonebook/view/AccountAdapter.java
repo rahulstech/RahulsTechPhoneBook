@@ -10,12 +10,12 @@ import android.widget.TextView;
 import java.util.Collections;
 import java.util.List;
 
-import rahulstech.android.phonebook.model.Account;
+import rahulstech.android.phonebook.model.RawContact;
 import rahulstech.android.phonebook.util.Check;
 
 public class AccountAdapter extends BaseAdapter {
 
-    private List<Account> accounts = Collections.EMPTY_LIST;
+    private List<RawContact> rawContacts = Collections.EMPTY_LIST;
     private LayoutInflater inflater;
 
     public AccountAdapter(Context context) {
@@ -23,20 +23,20 @@ public class AccountAdapter extends BaseAdapter {
         inflater = LayoutInflater.from(context);
     }
 
-    public void setAccounts(List<Account> accounts) {
-        this.accounts = accounts;
-        if (null == accounts || accounts.isEmpty()) this.accounts = Collections.EMPTY_LIST;
+    public void setAccounts(List<RawContact> rawContacts) {
+        this.rawContacts = rawContacts;
+        if (null == rawContacts || rawContacts.isEmpty()) this.rawContacts = Collections.EMPTY_LIST;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return accounts.size();
+        return rawContacts.size();
     }
 
     @Override
-    public Account getItem(int position) {
-        return accounts.get(position);
+    public RawContact getItem(int position) {
+        return rawContacts.get(position);
     }
 
     @Override
@@ -54,8 +54,8 @@ public class AccountAdapter extends BaseAdapter {
             convertView.setTag(vh);
         }
         ViewHolder vh = (ViewHolder) convertView.getTag();
-        Account account = getItem(position);
-        vh.text1.setText(account.getName());
+        RawContact rawContact = getItem(position);
+        vh.text1.setText(rawContact.getName());
         // TODO set account type name
         return convertView;
     }

@@ -3,6 +3,7 @@ package rahulstech.android.phonebook.model;
 import android.content.res.Resources;
 import android.provider.ContactsContract;
 
+import androidx.annotation.NonNull;
 import rahulstech.android.phonebook.util.Check;
 
 public class PhoneNumber {
@@ -29,6 +30,15 @@ public class PhoneNumber {
     }
 
     public PhoneNumber() {}
+
+    public PhoneNumber(@NonNull PhoneNumber copy) {
+        this.lookupKey = copy.lookupKey;
+        this.id = copy.id;
+        this.number = copy.number;
+        this.primary = copy.primary;
+        this.type = copy.type;
+        this.typeLable = copy.typeLable;
+    }
 
     public String getLookupKey() {
         return lookupKey;
@@ -93,5 +103,17 @@ public class PhoneNumber {
                 && Check.isEquals(lookupKey, number1.lookupKey)
                 && Check.isEquals(number, number1.number)
                 && Check.isEquals(typeLable, number1.typeLable);
+    }
+
+    @Override
+    public String toString() {
+        return "PhoneNumber{" +
+                "lookupKey='" + lookupKey + '\'' +
+                ", id=" + id +
+                ", number='" + number + '\'' +
+                ", primary=" + primary +
+                ", type=" + type +
+                ", typeLable=" + typeLable +
+                '}';
     }
 }

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".ContactInputActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="top"
+        android:layout_marginTop="@dimen/gap_large"
+        android:layout_marginBottom="@dimen/gap_medium"
+        android:paddingStart="@dimen/gap_medium"
+        android:paddingEnd="@dimen/gap_small"
+        android:animateLayoutChanges="true">
+
+        <ImageView
+            android:id="@+id/icon_name"
+            android:layout_width="@dimen/clickable_icon_size_tiny"
+            android:layout_height="@dimen/clickable_icon_size_tiny"
+            android:layout_weight="0"
+            app:srcCompat="@drawable/ic_baseline_person"
+            app:tint="@color/color_mute"/>
+
+        <LinearLayout
+            android:id="@+id/section_contact_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/section_contact_name_basic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:animateLayoutChanges="true"
+                app:layout_constraintTop_toBottomOf="@id/contact_photo"
+                app:layout_constraintStart_toEndOf="@id/icon_name"
+                app:layout_constraintEnd_toStartOf="@id/button_switch_name">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/section_display_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/gap_small"
+                    android:layout_marginRight="@dimen/gap_small"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    android:hint="@string/label_display_name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/display_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:text="@tools:sample/full_names"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+                <LinearLayout
+                    android:id="@+id/section_structured_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_prefix">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/prefix"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_first_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/first_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_middle_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/middle_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_last_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/last_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginLeft="@dimen/gap_small"
+                        android:layout_marginRight="@dimen/gap_small"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:hint="@string/label_suffix">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/suffix"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+
+
+        <CheckBox
+            android:id="@+id/button_switch_name"
+            android:layout_width="@dimen/clickable_icon_size_small"
+            android:layout_height="@dimen/clickable_icon_size_small"
+            android:layout_weight="0"
+            android:button="@null"
+            app:drawableTopCompat="@drawable/ic_toggle_arrow"
+            app:drawableTint="@color/color_mute"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            tools:checked="true"/>
+
+    </LinearLayout>
+
+    <!-- section phone number -->
+
+    <include android:id="@+id/section_phone_number"
+        layout="@layout/contact_input_section"/>
+
+    <!-- section email -->
+
+    <include android:id="@+id/section_email"
+        layout="@layout/contact_input_section"/>
+
+    <!-- section event -->
+
+    <include android:id="@+id/section_event"
+        layout="@layout/contact_input_section"/>
+
+    <!-- section note -->
+
+    <LinearLayout
+        android:id="@+id/section_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="top"
+        android:paddingStart="@dimen/gap_medium"
+        android:paddingEnd="@dimen/gap_small"
+        android:layout_marginBottom="@dimen/gap_large"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:animateLayoutChanges="true">
+
+        <ImageView
+            android:layout_width="@dimen/clickable_icon_size_tiny"
+            android:layout_height="@dimen/clickable_icon_size_tiny"
+            android:layout_weight="0"
+            app:tint="@color/color_mute"
+            app:srcCompat="@drawable/ic_baseline_note" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="@dimen/gap_small"
+            android:layout_marginRight="@dimen/gap_small"
+            app:boxBackgroundColor="@android:color/transparent"
+            android:hint="@string/label_note">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="10"
+                tools:text="@tools:sample/lorem/random"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/clear_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:padding="@dimen/gap_tiny"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:srcCompat="@drawable/ic_baseline_close"
+            app:tint="@color/color_danger"
+            app:layout_constraintTop_toTopOf="@id/start_date"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/start_date"/>
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/button_view_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:button="@null"
+        android:textSize="@dimen/text_size_secondary"
+        android:padding="@dimen/gap_small"
+        app:drawableStartCompat="@drawable/ic_toggle_arrow"
+        android:text="@string/label_view_more"
+        android:gravity="center_vertical|start"
+        android:background="?attr/selectableItemBackground"
+        tools:checked="true"/>
+
+</LinearLayout>

@@ -89,6 +89,11 @@ public class Relation {
         return ContactsContract.CommonDataKinds.Relation.getTypeLabel(res,type,typeLabel);
     }
 
+    public Uri getRelationContactUri() {
+        if (null == relativeContactLookupKey) return null;
+        return ContactsContract.Contacts.CONTENT_LOOKUP_URI.buildUpon().appendPath(relativeContactLookupKey).build();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

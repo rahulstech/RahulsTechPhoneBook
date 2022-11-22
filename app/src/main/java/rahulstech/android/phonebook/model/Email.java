@@ -30,12 +30,25 @@ public class Email {
 
     public Email() {}
 
+    public Email(Email email) {
+        this.lookupKey = email.lookupKey;
+        this.id = email.id;
+        this.address = email.address;
+        this.primary = email.primary;
+        this.type = email.type;
+        this.typeLabel = email.typeLabel;
+    }
+
     public String getLookupKey() {
         return lookupKey;
     }
 
     public long getId() {
         return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getAddress() {
@@ -85,5 +98,17 @@ public class Email {
                 && Check.isEquals(lookupKey, email.lookupKey)
                 && Check.isEquals(address, email.address)
                 && Check.isEquals(typeLabel, email.typeLabel);
+    }
+
+    @Override
+    public String toString() {
+        return "Email{" +
+                "lookupKey='" + lookupKey + '\'' +
+                ", id=" + id +
+                ", address='" + address + '\'' +
+                ", primary=" + primary +
+                ", type=" + type +
+                ", typeLabel=" + typeLabel +
+                '}';
     }
 }

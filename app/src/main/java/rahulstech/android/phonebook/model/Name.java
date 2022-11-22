@@ -1,7 +1,5 @@
 package rahulstech.android.phonebook.model;
 
-import android.provider.ContactsContract;
-
 import rahulstech.android.phonebook.util.Check;
 
 public class Name {
