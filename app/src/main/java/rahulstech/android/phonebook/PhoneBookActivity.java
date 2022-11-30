@@ -1,19 +1,25 @@
 package rahulstech.android.phonebook;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import rahulstech.android.phonebook.util.Check;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+import static rahulstech.android.phonebook.BuildConfig.DEBUG;
 
 public abstract class PhoneBookActivity extends AppCompatActivity {
+
+    protected <VM extends ViewModel> VM getOrCreateViewModel(Class<? extends VM> clazz) {
+        ViewModelProvider.Factory factory = (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication());
+        return new ViewModelProvider(this,factory).get(clazz);
+    }
 
     @Override
     protected void onResume() {
@@ -96,5 +102,13 @@ public abstract class PhoneBookActivity extends AppCompatActivity {
         if (CONTACT_PERMISSION_CODE == requestCode) {
             finish();
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ///                                  Utility Method                                         ///
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void logDebug(String tag, String message) {
+        if (DEBUG) Log.d(tag,message);
     }
 }

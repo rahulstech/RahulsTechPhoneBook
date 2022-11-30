@@ -9,7 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import rahulstech.android.phonebook.model.Website;
+import rahulstech.android.phonebook.R;
+import rahulstech.android.phonebook.model.PostalAddress;
 
 public class ContactDataTypeAdapter extends BaseAdapter {
 
@@ -51,8 +52,31 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         this.types = types;
     }
 
-    public static ContactDataTypeAdapter forPhoneNumber(Context context, CharSequence customLabel) {
+    private ContactDataTypeAdapter() {}
+
+    public static ContactDataType TYPE_OTHER = new ContactDataType(0,"OTHER");
+
+    public static ContactDataTypeAdapter EMPTY_ADAPTER = new ContactDataTypeAdapter(){
+
+        @Override
+        public int getCount() {
+            return 0;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return TYPE_OTHER.getType();
+        }
+
+        @Override
+        public ContactDataType getItem(int position) {
+            return TYPE_OTHER;
+        }
+    };
+
+    public static ContactDataTypeAdapter forPhoneNumber(Context context) {
         Resources res = context.getResources();
+        CharSequence customLabel = res.getString(R.string.label_custom);
         ContactDataType[] types = new ContactDataType[21];
 
         types[0] = new ContactDataType(ContactsContract.CommonDataKinds.Phone.TYPE_HOME,
@@ -101,8 +125,9 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         return new ContactDataTypeAdapter(context,types);
     }
 
-    public static ContactDataTypeAdapter forEmail(Context context, CharSequence customLabel) {
+    public static ContactDataTypeAdapter forEmail(Context context) {
         Resources res = context.getResources();
+        CharSequence customLabel = res.getString(R.string.label_custom);
         ContactDataType[] types = new ContactDataType[5];
 
         types[0] = new ContactDataType(ContactsContract.CommonDataKinds.Email.TYPE_HOME,
@@ -119,8 +144,9 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         return new ContactDataTypeAdapter(context,types);
     }
 
-    public static ContactDataTypeAdapter forEvent(Context context, CharSequence customLabel) {
+    public static ContactDataTypeAdapter forEvent(Context context) {
         Resources res = context.getResources();
+        CharSequence customLabel = res.getString(R.string.label_custom);
         ContactDataType[] types = new ContactDataType[4];
 
         types[0] = new ContactDataType(ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY,
@@ -135,8 +161,9 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         return new ContactDataTypeAdapter(context,types);
     }
 
-    public static ContactDataTypeAdapter forRelation(Context context, CharSequence customLabel) {
+    public static ContactDataTypeAdapter forRelation(Context context) {
         Resources res = context.getResources();
+        CharSequence customLabel = res.getString(R.string.label_custom);
         ContactDataType[] types = new ContactDataType[15];
 
         types[0] = new ContactDataType(ContactsContract.CommonDataKinds.Relation.TYPE_ASSISTANT,
@@ -173,8 +200,10 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         return new ContactDataTypeAdapter(context,types);
     }
 
-    public static ContactDataTypeAdapter forOrganization(Context context, CharSequence customLabel) {
+    public static ContactDataTypeAdapter forOrganization(Context context) {
         Resources res = context.getResources();
+        CharSequence customLabel = res.getString(R.string.label_custom);
+
         ContactDataType[] types = new ContactDataType[3];
 
         types[0] = new ContactDataType(ContactsContract.CommonDataKinds.Organization.TYPE_WORK,
@@ -184,6 +213,23 @@ public class ContactDataTypeAdapter extends BaseAdapter {
         types[2] = new ContactDataType(ContactsContract.CommonDataKinds.Organization.TYPE_CUSTOM,
                 ContactsContract.CommonDataKinds.Organization.getTypeLabel(res, ContactsContract.CommonDataKinds.Organization.TYPE_CUSTOM,customLabel));
 
+        return new ContactDataTypeAdapter(context,types);
+    }
+
+    public static ContactDataTypeAdapter forPostalAddress(Context context) {
+        Resources res = context.getResources();
+        CharSequence customLabel = res.getString(R.string.label_custom);
+
+        ContactDataType[] types = new ContactDataType[4];
+
+        types[0] = new ContactDataType(ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME,
+                ContactsContract.CommonDataKinds.StructuredPostal.getTypeLabel(res, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME,null));
+        types[1] = new ContactDataType(ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK,
+                ContactsContract.CommonDataKinds.StructuredPostal.getTypeLabel(res, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK,null));
+        types[2] = new ContactDataType(ContactsContract.CommonDataKinds.StructuredPostal.TYPE_OTHER,
+                ContactsContract.CommonDataKinds.StructuredPostal.getTypeLabel(res, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_OTHER,null));
+        types[3] = new ContactDataType(ContactsContract.CommonDataKinds.StructuredPostal.TYPE_CUSTOM,
+                ContactsContract.CommonDataKinds.StructuredPostal.getTypeLabel(res, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_CUSTOM,customLabel));
         return new ContactDataTypeAdapter(context,types);
     }
 

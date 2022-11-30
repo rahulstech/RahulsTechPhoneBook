@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="contact_details_phone_number_container">
-        <item name="android:orientation">horizontal</item>
+    <style name="ShapeTopRoundedCorner">
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerSizeTopLeft">12%</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopRight">12%</item>
+        <item name="cornerSizeBottomLeft">0%</item>
+        <item name="cornerFamilyBottomRight">rounded</item>
+        <item name="cornerSizeBottomRight">0%</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 
 </resources>

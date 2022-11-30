@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioGroup
+            android:id="@+id/ordering1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/gap_medium"
+            android:checkedButton="@id/order_fn1">
+
+            <RadioButton
+                android:id="@+id/order_fn1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_secondary"
+                android:text="@string/label_order_firstname_first"/>
+
+            <RadioButton
+                android:id="@+id/order_ln1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_secondary"
+                android:text="@string/label_order_lastname_first"/>
+
+        </RadioGroup>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <RadioGroup
+            android:id="@+id/ordering2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/gap_medium"
+            android:checkedButton="@id/order_asc">
+
+            <RadioButton
+                android:id="@+id/order_asc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_secondary"
+                android:text="@string/label_order_asc"/>
+
+            <RadioButton
+                android:id="@+id/order_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_secondary"
+                android:text="@string/label_order_desc"/>
+
+        </RadioGroup>
+
+    </LinearLayout>
+</ScrollView>

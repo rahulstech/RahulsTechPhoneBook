@@ -11,13 +11,13 @@
 
     <CheckBox
         android:id="@+id/include_year"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:checked="true"
         android:text="@string/label_include_year"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toStartOf="@id/button_negative"/>
 
     <FrameLayout
         android:id="@+id/container_date_picker"
@@ -30,30 +30,34 @@
             android:id="@+id/date_picker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="@dimen/gap_tiny"
             android:animateLayoutChanges="true"
             android:calendarViewShown="false"
-            android:datePickerMode="spinner"/>
+            android:datePickerMode="spinner" />
     </FrameLayout>
 
     <Button
         android:id="@+id/button_negative"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/clickable_icon_size_medium"
+        android:layout_height="@dimen/clickable_icon_size_small"
         android:background="?attr/selectableItemBackground"
         android:layout_marginEnd="@dimen/gap_small"
         android:textColor="@color/black"
         android:text="@android:string/cancel"
-        app:layout_constraintEnd_toStartOf="@id/button_positive"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_date_picker"/>
+        android:padding="0dp"
+        android:textSize="14sp"
+        android:textAlignment="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_positive"/>
     <Button
         android:id="@+id/button_positive"
-        android:layout_width="@dimen/clickable_icon_size_large"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/gap_small"
+        android:layout_width="@dimen/clickable_icon_size_medium"
+        android:layout_height="@dimen/clickable_icon_size_small"
         android:text="@android:string/ok"
+        android:textSize="14sp"
+        android:padding="0dp"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_date_picker"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

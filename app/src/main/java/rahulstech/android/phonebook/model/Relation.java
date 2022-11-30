@@ -4,27 +4,22 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.ContactsContract;
 
+import java.util.Objects;
+
+import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.util.Check;
 
 public class Relation {
-    // TODO: relation contact photo not properly found
-    // solution: add custom contact data mapping relation data and contact lookup key
-    private String lookupKey;
 
     private long id;
 
     private String displayName;
-
-    private String relativeContactLookupKey; // causing problem for contacts with same name
-
-    private Uri photoUri;
     
     private int type;
     
     private CharSequence typeLabel;
 
-    public Relation(String lookupKey, long id, String displayName, int type, CharSequence typeLabel) {
-        this.lookupKey = lookupKey;
+    public Relation(long id, String displayName, int type, CharSequence typeLabel) {
         this.id = id;
         this.displayName = displayName;
         this.type = type;
@@ -32,10 +27,6 @@ public class Relation {
     }
 
     public Relation() {}
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
 
     public long getId() {
         return id;
@@ -51,22 +42,6 @@ public class Relation {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    public String getRelativeContactLookupKey() {
-        return relativeContactLookupKey;
-    }
-
-    public void setRelativeContactLookupKey(String relativeContactLookupKey) {
-        this.relativeContactLookupKey = relativeContactLookupKey;
-    }
-
-    public Uri getPhotoUri() {
-        return photoUri;
-    }
-
-    public void setPhotoUri(Uri photoUri) {
-        this.photoUri = photoUri;
     }
 
     public int getType() {
@@ -89,18 +64,23 @@ public class Relation {
         return ContactsContract.CommonDataKinds.Relation.getTypeLabel(res,type,typeLabel);
     }
 
-    public Uri getRelationContactUri() {
-        if (null == relativeContactLookupKey) return null;
-        return ContactsContract.Contacts.CONTENT_LOOKUP_URI.buildUpon().appendPath(relativeContactLookupKey).build();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Relation)) return false;
         Relation relation = (Relation) o;
-        return id == relation.id
-                && Check.isEquals(displayName,relation.displayName)
-                && Check.isEquals(typeLabel, relation.typeLabel);
+        return id == relation.id && type == relation.type
+                && Objects.equals(displayName, relation.displayName)
+                && Objects.equals(typeLabel, relation.typeLabel);
+    }
+
+    @Override
+    public String toString() {
+        return "Relation{" +
+                "id=" + id +
+                ", displayName='" + displayName + '\'' +
+                ", type=" + type +
+                ", typeLabel=" + typeLabel +
+                '}';
     }
 }

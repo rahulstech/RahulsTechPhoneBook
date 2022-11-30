@@ -20,7 +20,6 @@
         android:animateLayoutChanges="true">
 
         <ImageView
-            android:id="@+id/icon_name"
             android:layout_width="@dimen/clickable_icon_size_tiny"
             android:layout_height="@dimen/clickable_icon_size_tiny"
             android:layout_weight="0"
@@ -41,25 +40,50 @@
                 android:layout_weight="1"
                 android:animateLayoutChanges="true"
                 app:layout_constraintTop_toBottomOf="@id/contact_photo"
-                app:layout_constraintStart_toEndOf="@id/icon_name"
                 app:layout_constraintEnd_toStartOf="@id/button_switch_name">
 
-                <com.google.android.material.textfield.TextInputLayout
+                <LinearLayout
                     android:id="@+id/section_display_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/gap_small"
-                    android:layout_marginRight="@dimen/gap_small"
-                    app:boxBackgroundColor="@android:color/transparent"
-                    android:hint="@string/label_display_name">
+                    android:orientation="vertical">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/display_name"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        tools:text="@tools:sample/full_names"/>
+                        android:layout_marginStart="@dimen/gap_small"
+                        android:layout_marginEnd="@dimen/gap_tiny"
+                        android:hint="@string/label_first_name">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/display_first_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionNext"
+                            android:maxLines="1"
+                            tools:text="@tools:sample/full_names"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gap_small"
+                        android:layout_marginEnd="@dimen/gap_tiny"
+                        android:layout_marginTop="@dimen/gap_tiny"
+                        android:hint="@string/label_last_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/display_last_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:imeOptions="actionNext"
+                            tools:text="@tools:sample/full_names"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
                 <LinearLayout
                     android:id="@+id/section_structured_name"
                     android:layout_width="match_parent"
@@ -70,85 +94,158 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/gap_small"
-                        android:layout_marginRight="@dimen/gap_small"
-                        app:boxBackgroundColor="@android:color/transparent"
+                        android:layout_marginTop="@dimen/gap_tiny"
+                        android:layout_marginStart="@dimen/gap_small"
+                        android:layout_marginEnd="@dimen/gap_tiny"
                         android:hint="@string/label_prefix">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/prefix"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:imeOptions="actionNext"
+                            tools:text="@tools:sample/full_names"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/gap_small"
+                        android:layout_marginTop="@dimen/gap_tiny"
                         android:layout_marginLeft="@dimen/gap_small"
                         android:layout_marginRight="@dimen/gap_small"
-                        app:boxBackgroundColor="@android:color/transparent"
                         android:hint="@string/label_first_name">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/first_name"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:imeOptions="actionNext"
+                            tools:text="@tools:sample/full_names"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/gap_small"
-                        android:layout_marginLeft="@dimen/gap_small"
-                        android:layout_marginRight="@dimen/gap_small"
-                        app:boxBackgroundColor="@android:color/transparent"
+                        android:layout_marginTop="@dimen/gap_tiny"
+                        android:layout_marginStart="@dimen/gap_small"
+                        android:layout_marginEnd="@dimen/gap_tiny"
                         android:hint="@string/label_middle_name">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/middle_name"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:imeOptions="actionNext"
+                            tools:text="@tools:sample/full_names"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/gap_small"
-                        android:layout_marginLeft="@dimen/gap_small"
-                        android:layout_marginRight="@dimen/gap_small"
-                        app:boxBackgroundColor="@android:color/transparent"
+                        android:layout_marginTop="@dimen/gap_tiny"
+                        android:layout_marginStart="@dimen/gap_small"
+                        android:layout_marginEnd="@dimen/gap_tiny"
                         android:hint="@string/label_last_name">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/last_name"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:imeOptions="actionNext"
+                            tools:text="@tools:sample/full_names"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/gap_small"
-                        android:layout_marginLeft="@dimen/gap_small"
-                        android:layout_marginRight="@dimen/gap_small"
-                        app:boxBackgroundColor="@android:color/transparent"
+                        android:layout_marginTop="@dimen/gap_tiny"
+                        android:layout_marginStart="@dimen/gap_small"
+                        android:layout_marginEnd="@dimen/gap_tiny"
                         android:hint="@string/label_suffix">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/suffix"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionNext"
+                            android:maxLines="1"
+                            tools:text="@tools:sample/full_names"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </FrameLayout>
-        </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/section_more_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gap_small"
+                    android:layout_marginStart="@dimen/gap_small"
+                    android:layout_marginEnd="@dimen/gap_small"
+                    android:hint="@string/label_phonetic_first_name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/phonetic_first_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:imeOptions="actionNext"
+                        tools:text="@tools:sample/full_names"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gap_tiny"
+                    android:layout_marginStart="@dimen/gap_small"
+                    android:layout_marginEnd="@dimen/gap_small"
+                    android:hint="@string/label_phonetic_middle_name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/phonetic_middle_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:imeOptions="actionNext"
+                        tools:text="@tools:sample/full_names"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gap_tiny"
+                    android:layout_marginStart="@dimen/gap_small"
+                    android:layout_marginEnd="@dimen/gap_small"
+                    android:hint="@string/label_phonetic_last_name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/phonetic_last_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:imeOptions="actionNext"
+                        tools:text="@tools:sample/full_names"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/button_switch_name"
@@ -178,6 +275,134 @@
     <include android:id="@+id/section_event"
         layout="@layout/contact_input_section"/>
 
+    <!-- section postal address -->
+
+    <include android:id="@+id/section_postal_address"
+        layout="@layout/contact_input_section"
+        android:visibility="gone"/>
+
+    <!-- section relation -->
+
+    <include android:id="@+id/section_relation"
+        layout="@layout/contact_input_section"
+        android:visibility="gone"/>
+
+    <!-- section organization -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/section_organization"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/gap_medium"
+        android:paddingEnd="@dimen/gap_small"
+        android:paddingBottom="@dimen/gap_medium"
+        android:animateLayoutChanges="true"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/icon_organization"
+            android:layout_width="@dimen/clickable_icon_size_tiny"
+            android:layout_height="@dimen/clickable_icon_size_tiny"
+            app:tint="@color/color_mute"
+            app:srcCompat="@drawable/ic_baseline_organization"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/container_company"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:hintEnabled="true"
+            app:hintAnimationEnabled="true"
+            android:hint="@string/label_company"
+            android:layout_marginStart="@dimen/gap_small"
+            android:layout_marginEnd="@dimen/gap_tiny"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/icon_organization"
+            app:layout_constraintEnd_toStartOf="@id/clear_organization">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/org_company"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:imeOptions="actionNext"
+                android:textSize="@dimen/text_size_secondary_small"
+                tools:text="@tools:sample/lorem" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/container_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gap_tiny"
+            app:hintEnabled="true"
+            app:hintAnimationEnabled="true"
+            android:hint="@string/label_organization_title"
+            android:layout_marginStart="@dimen/gap_small"
+            android:layout_marginEnd="@dimen/gap_tiny"
+            app:layout_constraintTop_toBottomOf="@id/container_company"
+            app:layout_constraintStart_toEndOf="@id/icon_organization"
+            app:layout_constraintEnd_toStartOf="@id/clear_organization">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/org_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
+                android:maxLines="1"
+                android:textSize="@dimen/text_size_secondary_small"
+                tools:text="@tools:sample/lorem" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/container_department"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gap_tiny"
+            app:hintEnabled="true"
+            app:hintAnimationEnabled="true"
+            android:hint="@string/label_organization_department"
+            android:layout_marginStart="@dimen/gap_small"
+            android:layout_marginEnd="@dimen/gap_tiny"
+            app:layout_constraintTop_toBottomOf="@id/container_title"
+            app:layout_constraintStart_toEndOf="@id/icon_organization"
+            app:layout_constraintEnd_toStartOf="@id/clear_organization">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/org_department"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
+                android:maxLines="1"
+                android:textSize="@dimen/text_size_secondary_small"
+                tools:text="@tools:sample/lorem" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/clear_organization"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/gap_tiny"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:srcCompat="@drawable/ic_baseline_close"
+            app:tint="@color/color_danger"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/container_company"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- section website -->
+
+    <include android:id="@+id/section_website"
+        layout="@layout/contact_input_section"
+        android:visibility="gone"/>
+
     <!-- section note -->
 
     <LinearLayout
@@ -188,7 +413,7 @@
         android:gravity="top"
         android:paddingStart="@dimen/gap_medium"
         android:paddingEnd="@dimen/gap_small"
-        android:layout_marginBottom="@dimen/gap_large"
+        android:paddingBottom="@dimen/gap_medium"
         android:visibility="gone"
         tools:visibility="visible"
         android:animateLayoutChanges="true">
@@ -204,8 +429,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginLeft="@dimen/gap_small"
-            android:layout_marginRight="@dimen/gap_small"
+            android:layout_marginStart="@dimen/gap_small"
+            android:layout_marginEnd="@dimen/gap_tiny"
             app:boxBackgroundColor="@android:color/transparent"
             android:hint="@string/label_note">
 
@@ -214,6 +439,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="10"
+                android:inputType="textMultiLine"
+                android:scrollbarStyle="insideInset"
+                android:overScrollMode="always"
+                android:scrollbars="vertical"
                 tools:text="@tools:sample/lorem/random"/>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -239,6 +468,7 @@
         android:button="@null"
         android:textSize="@dimen/text_size_secondary"
         android:padding="@dimen/gap_small"
+        android:textAlignment="viewStart"
         app:drawableStartCompat="@drawable/ic_toggle_arrow"
         android:text="@string/label_view_more"
         android:gravity="center_vertical|start"

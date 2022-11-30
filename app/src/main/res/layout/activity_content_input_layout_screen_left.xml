@@ -4,15 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/gap_medium"
     android:orientation="vertical"
-    android:gravity="top|center">
+    android:gravity="center">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/contact_photo"
         android:layout_width="@dimen/clickable_icon_size_xxlarge"
         android:layout_height="@dimen/clickable_icon_size_xxlarge"
         android:layout_marginTop="30dp"
+        android:background="?attr/selectableItemBackground"
         app:shapeAppearanceOverlay="@style/Theme.RahulsTechPhoneBook.RoundedPhoto"
-        tools:src="@tools:sample/avatars"/>
+        app:srcCompat="@drawable/placeholder_contact_photo_picker"/>
 
 </LinearLayout>

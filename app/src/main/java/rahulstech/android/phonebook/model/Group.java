@@ -4,5 +4,7 @@ import android.provider.ContactsContract;
 
 public class Group {
 
-    public Group() {}
+    public Group() {
+
+    }
 }

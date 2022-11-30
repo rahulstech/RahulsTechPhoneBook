@@ -7,36 +7,40 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import rahulstech.android.phonebook.model.RawContact;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import rahulstech.android.phonebook.R;
+import rahulstech.android.phonebook.model.ContactAccount;
 import rahulstech.android.phonebook.util.Check;
 
 public class AccountAdapter extends BaseAdapter {
 
-    private List<RawContact> rawContacts = Collections.EMPTY_LIST;
+    private List<ContactAccount> accounts = Collections.emptyList();
     private LayoutInflater inflater;
 
-    public AccountAdapter(Context context) {
+    public AccountAdapter(@NonNull Context context) {
         Check.isNonNull(context,"null == context");
         inflater = LayoutInflater.from(context);
     }
 
-    public void setAccounts(List<RawContact> rawContacts) {
-        this.rawContacts = rawContacts;
-        if (null == rawContacts || rawContacts.isEmpty()) this.rawContacts = Collections.EMPTY_LIST;
+    public void setAccounts(@Nullable List<ContactAccount> accounts) {
+        if (null == accounts) this.accounts = Collections.emptyList();
+        else this.accounts = accounts;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return rawContacts.size();
+        return accounts.size();
     }
 
     @Override
-    public RawContact getItem(int position) {
-        return rawContacts.get(position);
+    public ContactAccount getItem(int position) {
+        return accounts.get(position);
     }
 
     @Override
@@ -47,17 +51,29 @@ public class AccountAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (null == convertView) {
-            convertView = inflater.inflate(android.R.layout.simple_list_item_2,parent,false);
+            convertView = inflater.inflate(R.layout.contact_account_chooser_item,parent,false);
             ViewHolder vh = new ViewHolder();
-            vh.text1 = convertView.findViewById(android.R.id.text1);
-            vh.text2 = convertView.findViewById(android.R.id.text2);
+            vh.text1 = convertView.findViewById(R.id.display_name);
+            vh.text2 = convertView.findViewById(R.id.name);
             convertView.setTag(vh);
         }
         ViewHolder vh = (ViewHolder) convertView.getTag();
-        RawContact rawContact = getItem(position);
-        vh.text1.setText(rawContact.getName());
-        // TODO set account type name
+        ContactAccount account = getItem(position);
+        vh.text1.setText(account.displayName);
+        vh.text2.setText(account.name);
         return convertView;
+    }
+
+    public int getPositionByTypeAndName(@Nullable String type, @Nullable String name) {
+        int position = 0;
+        for (ContactAccount acc : accounts) {
+            String accountType = acc.type;
+            String accountName = acc.name;
+            if (Check.isEquals(type,accountType)
+                    && Check.isEquals(name,accountName)) return position;
+            position++;
+        }
+        return -1;
     }
 
     private static class ViewHolder {

@@ -68,6 +68,7 @@ public class DatePickerDialog extends DialogFragment {
         year = datePicker.getYear();
         month = datePicker.getMonth();
         dayOfMonth = datePicker.getDayOfMonth();
+        datePicker.clearFocus();
         if (null != listener) listener.onDateSet(this,year,month,dayOfMonth);
         dismiss();
     }

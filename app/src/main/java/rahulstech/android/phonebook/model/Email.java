@@ -3,12 +3,11 @@ package rahulstech.android.phonebook.model;
 import android.content.res.Resources;
 import android.provider.ContactsContract;
 
+import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.util.Check;
 
 public class Email {
-    
-    private String lookupKey;
-    
+
     private long id;
 
     private String address;
@@ -19,8 +18,7 @@ public class Email {
 
     private CharSequence typeLabel;
 
-    public Email(String lookupKey, long id, String address, boolean primary, int type, CharSequence typeLabel) {
-        this.lookupKey = lookupKey;
+    public Email(long id, String address, boolean primary, int type, CharSequence typeLabel) {
         this.id = id;
         this.address = address;
         this.primary = primary;
@@ -29,19 +27,6 @@ public class Email {
     }
 
     public Email() {}
-
-    public Email(Email email) {
-        this.lookupKey = email.lookupKey;
-        this.id = email.id;
-        this.address = email.address;
-        this.primary = email.primary;
-        this.type = email.type;
-        this.typeLabel = email.typeLabel;
-    }
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
 
     public long getId() {
         return id;
@@ -95,20 +80,7 @@ public class Email {
         return id == email.id
                 && primary == email.primary
                 && type == email.type
-                && Check.isEquals(lookupKey, email.lookupKey)
                 && Check.isEquals(address, email.address)
                 && Check.isEquals(typeLabel, email.typeLabel);
-    }
-
-    @Override
-    public String toString() {
-        return "Email{" +
-                "lookupKey='" + lookupKey + '\'' +
-                ", id=" + id +
-                ", address='" + address + '\'' +
-                ", primary=" + primary +
-                ", type=" + type +
-                ", typeLabel=" + typeLabel +
-                '}';
     }
 }

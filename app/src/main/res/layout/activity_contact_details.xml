@@ -1,66 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ContactDetailsActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize">
+    <include layout="@layout/contact_details_action_bar"/>
 
-    </androidx.appcompat.widget.Toolbar>
-
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
         android:layout_marginTop="?attr/actionBarSize">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:contentPaddingBottom="@dimen/gap_medium"
-                android:layout_marginBottom="@dimen/gap_medium"
-                app:cardElevation="2dp"
-                app:shapeAppearanceOverlay="@style/Theme.RahulsTechPhoneBook.ContactProfile">
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                <include layout="@layout/activity_contact_details_layout_screen_left"/>
 
-                    <include layout="@layout/activity_contact_details_layout_screen_left"/>
+                <include layout="@layout/activity_contact_details_layout_screen_right" />
 
-                    <TextView
-                        android:id="@+id/display_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:singleLine="true"
-                        android:ellipsize="marquee"
-                        android:layout_marginTop="@dimen/gap_medium"
-                        android:paddingLeft="@dimen/gap_large"
-                        android:paddingRight="@dimen/gap_large"
-                        android:textSize="@dimen/text_size_primary"
-                        android:textColor="@color/black"
-                        tools:text="A very very very very very very very very large name"/>
-
-                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
 
 
-            </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
 
-            <include layout="@layout/activity_contact_details_layout_screen_right"/>
 
-        </LinearLayout>
-    </ScrollView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</FrameLayout>

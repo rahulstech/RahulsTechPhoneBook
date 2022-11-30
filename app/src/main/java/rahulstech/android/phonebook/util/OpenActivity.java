@@ -1,6 +1,7 @@
 package rahulstech.android.phonebook.util;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.CalendarContract;
@@ -40,20 +41,20 @@ public final class OpenActivity {
     }
 
     public static void makeVoiceCall(@NonNull Activity activity, String number) {
-        Check.isNonEmptyString(number,"number is empty");
+        if (Check.isEmptyString(number)) return;
         Intent i = new Intent(Intent.ACTION_CALL,Uri.parse("tel:" + number));
         startActivityWithChooser(activity,i);
     }
 
     public static void sendSms(@NonNull Activity activity, String number) {
-        Check.isNonEmptyString(number,"number is empty");
+        if (Check.isEmptyString(number)) return;
         Intent i = new Intent(Intent.ACTION_VIEW,Uri.parse("sms:"+number));
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityWithChooser(activity,i);
     }
 
     public static void sendEmail(@NonNull Activity activity, String address) {
-        Check.isNonEmptyString(address,"address is empty");
+        if (Check.isEmptyString(address)) return;
         Intent i = new Intent(Intent.ACTION_SENDTO,Uri.parse("mailto:"+address));
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityWithChooser(activity,i);
@@ -67,8 +68,18 @@ public final class OpenActivity {
     }
 
     public static void viewWebsite(@NonNull Activity activity, String url) {
-        Check.isNonEmptyString(url,"url is empty");
+        if (Check.isEmptyString(url)) return;
         Intent i = new Intent(Intent.ACTION_VIEW,Uri.parse(url));
+        startActivityWithChooser(activity,i);
+    }
+
+    public static void openMap(@NonNull Activity activity, String address) {
+
+    }
+
+    public static void searchWeb(@NonNull Activity activity, String query) {
+        Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
+        i.putExtra(SearchManager.QUERY,query);
         startActivityWithChooser(activity,i);
     }
 
@@ -77,4 +88,6 @@ public final class OpenActivity {
         Check.isNonNull(intent,"null == intent");
         activity.startActivity(Intent.createChooser(intent,activity.getString(R.string.label_intent_chooser)));
     }
+
+
 }

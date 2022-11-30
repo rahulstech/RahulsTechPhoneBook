@@ -48,11 +48,12 @@ public class DateTimeUtil {
         }
     }
 
-    public static String formatDate(int year, int month, int dayOfMonth, boolean includeYear, DateFormat withYear, DateFormat withOutYear) {
+    public static String formatDate(int year, int month, int dayOfMonth, boolean includeYear, String withYear, String withOutYear) {
         if (null == withYear || null == withOutYear) return null;
         Calendar cal = Calendar.getInstance();
         cal.set(year,month,dayOfMonth);
-        return includeYear ? withYear.format(cal.getTimeInMillis()) : withOutYear.format(cal.getTimeInMillis());
+        return includeYear ? new SimpleDateFormat(withYear).format(cal.getTimeInMillis())
+                : new SimpleDateFormat(withOutYear).format(cal.getTimeInMillis());
     }
 
     /**

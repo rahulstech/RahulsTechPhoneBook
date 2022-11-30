@@ -17,55 +17,27 @@ import rahulstech.android.phonebook.util.Check;
 
 public abstract class ClickableItemAdapter<T,VH extends ClickableItemAdapter.ClickableItemViewHolder<T>> extends RecyclerView.Adapter<VH> {
 
-    private DiffUtil.ItemCallback<T> mDefaultDifferItemCallback = new DiffUtil.ItemCallback<T>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull Object oldItem, @NonNull Object newItem) {
-            return Check.isEquals(oldItem, newItem);
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull Object oldItem, @NonNull Object newItem) {
-            return Check.isEquals(oldItem, newItem);
-        }
-    };
-
-    private AsyncListDiffer<T> mDiffer;
-
+    @NonNull
+    private Context context;
+    @NonNull
     private final LayoutInflater inflater;
     private OnListItemClickListener listItemClickListener;
     private OnListItemLongClickListener listItemLongClickListener;
 
     protected ClickableItemAdapter(@NonNull Context context) {
-        this(context,null);
-    }
-
-    protected ClickableItemAdapter(@NonNull Context context, @Nullable DiffUtil.ItemCallback<T> callback) {
         Check.isNonNull(context,"null == context");
+        this.context = context;
         inflater = LayoutInflater.from(context);
-        mDiffer = new AsyncListDiffer(this,null == callback ? mDefaultDifferItemCallback : callback);
     }
 
+    @NonNull
+    public Context getContext() {
+        return context;
+    }
+
+    @NonNull
     public LayoutInflater getLayoutInflater() {
         return inflater;
-    }
-
-    public void changeItems(List<T> newItems) {
-        List items = newItems;
-        if (null == items || items.isEmpty()) {
-            items = Collections.EMPTY_LIST;
-        }
-        mDiffer.submitList(items);
-    }
-
-    public T getItem(int position) {
-        if (0<=position && position<getItemCount())
-            return mDiffer.getCurrentList().get(position);
-        return null;
-    }
-
-    @Override
-    public int getItemCount() {
-        return mDiffer.getCurrentList().size();
     }
 
     public void setOnListItemClickListener(OnListItemClickListener listItemClickListener) {
@@ -88,6 +60,8 @@ public abstract class ClickableItemAdapter<T,VH extends ClickableItemAdapter.Cli
         }
         return false;
     }
+
+    public abstract T getItem(int position);
 
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
@@ -133,6 +107,5 @@ public abstract class ClickableItemAdapter<T,VH extends ClickableItemAdapter.Cli
             return adapter.dispatchItemLongClick(child,getAdapterPosition(),getItemViewType());
         }
     }
-
 
 }

@@ -4,7 +4,17 @@
     <string name="message_permission_not_granted">permission not granted</string>
     <string name="message_save_fail">not saved</string>
     <string name="message_contact_not_loaded">contact not loaded</string>
+    <string name="message_contact_not_found">contact not found</string>
     <string name="message_save_nothing">nothing to save</string>
     <string name="message_contact_load_error">error loading contact</string>
+    <string name="message_copied_to_clipboard">copied to clipboard</string>
+    <string name="message_saved_successful">saved</string>
+
+    <plurals name="message_warning_delete_contact">
+        <item quantity="one">Selected contact will be deleted permanently. Do you want to proceed?</item>
+        <item quantity="many">Selected contacts will be deleted permanently. Do you want to proceed?</item>
+    </plurals>
+
+    <string name="message_error">something error occurred</string>
 
 </resources>

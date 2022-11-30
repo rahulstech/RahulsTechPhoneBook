@@ -1,30 +1,31 @@
 package rahulstech.android.phonebook;
 
-import android.graphics.drawable.Drawable;
+import android.content.res.ColorStateList;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+import androidx.core.widget.ImageViewCompat;
 import rahulstech.android.phonebook.concurrent.AsyncTask;
 import rahulstech.android.phonebook.model.ContactDetails;
 import rahulstech.android.phonebook.model.Email;
@@ -35,11 +36,17 @@ import rahulstech.android.phonebook.model.PhoneNumber;
 import rahulstech.android.phonebook.model.PostalAddress;
 import rahulstech.android.phonebook.model.Relation;
 import rahulstech.android.phonebook.model.Website;
-import rahulstech.android.phonebook.repository.ContactRepository;
 import rahulstech.android.phonebook.util.Check;
+import rahulstech.android.phonebook.util.ContactSorting;
 import rahulstech.android.phonebook.util.DateTimeUtil;
+import rahulstech.android.phonebook.util.DrawableUtil;
 import rahulstech.android.phonebook.util.OpenActivity;
+import rahulstech.android.phonebook.util.Settings;
+import rahulstech.android.phonebook.view.ListPopups;
 import rahulstech.android.phonebook.viewmodel.ContactViewModel;
+
+import static rahulstech.android.phonebook.util.DrawableUtil.vectorDrawable;
+import static rahulstech.android.phonebook.util.Helpers.createContactPhotoPlaceholder;
 
 public class ContactDetailsActivity extends PhoneBookActivity {
 
@@ -54,22 +61,21 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
     private static final String TAG = "ContactDetailsActivity";
 
-    ImageView contactPhoto;
-    CheckBox contactStar;
-    TextView contactName;
+    private ImageView contactPhoto;
+    private CheckBox contactStar;
+    private TextView contactName;
+    private Toolbar toolbar;
 
-    Toolbar toolbar;
+    private ContactViewModel vm;
 
-    ContactViewModel vm;
-
-    ContactDetails details = null;
+    private ContactDetails details = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_details);
 
-        vm = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(ContactViewModel.class);
+        vm = getOrCreateViewModel(ContactViewModel.class);
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -79,27 +85,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
         contactPhoto = findViewById(R.id.contact_photo);
         contactStar = findViewById(R.id.contact_star);
-        contactStar.setOnClickListener(v->{
-            final boolean checked = contactStar.isChecked();
-            if (null != details){
-                details.getContact();
-                AsyncTask.execute(()->ContactRepository.get(this).getContactRepositoryOperation().setContactStarred(details.getContact(),checked),
-                        new AsyncTask.AsyncTaskCallback(){
-                            @Override
-                            public void onError(AsyncTask task) {
-                                Log.e(TAG,null,task.getError());
-                            }
-
-                            @Override
-                            public void onResult(AsyncTask task) {
-                                boolean saved = task.getResult();
-                                if (!saved) {
-                                    contactStar.setChecked(!checked);
-                                }
-                            }
-                        });
-            }
-        });
+        contactStar.setOnClickListener(v-> onClickStar());
         contactName = findViewById(R.id.display_name);
 
         initSectionPhoneNumber();
@@ -128,11 +114,16 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.delete) {
+        if (id == android.R.id.home) {
+            super.onBackPressed();
+        }
+        else if (id == R.id.delete) {
             onDeleteContact();
+            return true;
         }
         else if (id == R.id.edit) {
             onEditContact();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -151,8 +142,51 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         }
     }
 
-    void onDeleteContact() {
-        // TODO: show delete confirmation dialog
+    private void onClickStar() {
+        final boolean checked = contactStar.isChecked();
+        if (null != details){
+            details.getContact();
+            AsyncTask.execute(()->vm.getRepository().setContactStarred(details.getContact(),checked),
+                    new AsyncTask.AsyncTaskCallback(){
+                        @Override
+                        public void onError(AsyncTask task) {
+                            Log.e(TAG,null,task.getError());
+                            Toast.makeText(ContactDetailsActivity.this,R.string.message_contact_load_error, Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onResult(AsyncTask task) {
+                            boolean saved = task.getResult();
+                            if (!saved) {
+                                contactStar.setChecked(!checked);
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void onDeleteContact() {
+        String message = getResources().getQuantityString(R.plurals.message_warning_delete_contact,1);
+
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.label_cancel,null)
+                .setNegativeButton(R.string.label_delete,(di,which)->{
+                    vm.removeContact(vm.getContactDetails(),new AsyncTask.AsyncTaskCallback(){
+                        @Override
+                        public void onError(AsyncTask task) {
+                            Log.e(TAG,null,task.getError());
+                        }
+
+                        @Override
+                        public void onResult(AsyncTask task) {
+                            boolean removed = task.getResult();
+                            if (removed) finish();
+                            else Toast.makeText(ContactDetailsActivity.this,R.string.message_error,Toast.LENGTH_SHORT).show();;
+                        }
+                    });
+                })
+                .setMessage(message)
+                .show();
     }
 
     void onEditContact() {
@@ -162,8 +196,11 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
     void loadContact() {
         Uri data = getIntent().getData();
-        if (null == data) finish();
-        AsyncTask.execute(()-> ContactRepository.get(this).getContactRepositoryOperation().findContactDetails(data),new AsyncTask.AsyncTaskCallback(){
+        if (null == data) {
+            finish();
+            return;
+        }
+        vm.loadContactDetails(data,new AsyncTask.AsyncTaskCallback(){
             @Override
             public void onError(AsyncTask task) {
                 Log.e(TAG,null,task.getError());
@@ -177,21 +214,23 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         });
     }
 
-    void onContactLoaded(@Nullable ContactDetails details) {
+    private void onContactLoaded(@Nullable ContactDetails details) {
         this.details = details;
-        if (null == details) finish();
+        if (null == details) {
+            Toast.makeText(this,R.string.message_contact_not_found,Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        ContactSorting sorting = Settings.getInstance(this).getContactSorting();
         Glide.with(this).load(details.getPhotoUri())
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .placeholder(getRoundedTextDrawable(contactPhoto,details.getDisplayName()))
+                .placeholder(createContactPhotoPlaceholder(details,sorting,contactPhoto,
+                        vectorDrawable(this, R.drawable.placeholder_contact_photo)))
                 .into(contactPhoto);
         contactStar.setChecked(details.getContact().isStarred());
-        if (null == contactName) {
-            getSupportActionBar().setDisplayShowTitleEnabled(true);
-            setTitle(details.getDisplayName());
-        }
-        else {
-            contactName.setText(details.getDisplayName());
-        }
+
+        String displayName = details.getContact().getDisplayName(sorting.isDisplayFirstNameFirst());
+        if (Check.isEmptyString(displayName)) displayName = "Unknown Name";
+        contactName.setText(displayName);
 
         prepareSectionPhoneNumber(details.getPhoneNumbers());
 
@@ -199,22 +238,15 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
         prepareSectionEvent(details.getEvents());
 
-        prepareSectionRelative(details.getRelatives());
+        prepareSectionRelative(details.getRelations());
 
         prepareSectionAddress(details.getAddresses());
 
-        prepareSectionOrganization(details.getOrganizations());
+        prepareSectionOrganization(details.getOrganization());
 
         prepareSectionWebsite(details.getWebsites());
 
         prepareSectionNote(details.getNote());
-    }
-
-    private Drawable getRoundedTextDrawable(@NonNull View view, String text) {
-        int radius = view.getMeasuredWidth()/2;
-        int color = ColorGenerator.MATERIAL.getRandomColor();
-        String label = text.substring(0,1);
-        return TextDrawable.builder().buildRoundRect(label,color,radius);
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -227,7 +259,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     void initSectionPhoneNumber() {
         sectionNumber = findViewById(R.id.section_phone_number);
         ImageView icon = sectionNumber.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_phone,getTheme()));
+        icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_phone));
         phoneNumbersList = sectionNumber.findViewById(R.id.grid);
         phoneNumbersList.setColumnCount(1);
     }
@@ -236,15 +268,24 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         sectionNumber.setVisibility(View.GONE);
         phoneNumbersList.removeAllViews();
         if (null == numbers || numbers.isEmpty()) return;
+        Collections.sort(numbers,(n1,n2)->n1.isPrimary() ? -1 : 1);
         for (PhoneNumber number : numbers) {
             View view = getLayoutInflater().inflate(R.layout.contact_details_phone_number,phoneNumbersList,false);
-            TextView primary = view.findViewById(R.id.text_primary);
+            CheckedTextView primary = view.findViewById(R.id.text_primary);
             TextView secondary = view.findViewById(R.id.text_secondary);
             primary.setText(number.getNumber());
+            primary.setChecked(number.isPrimary());
             secondary.setText(number.getTypeLabel(getResources()));
             view.setOnClickListener(v->onClickNumber(number));
-            view.setOnLongClickListener(v->onLongClickNumber(number));
+            view.setOnLongClickListener(v->onLongClickNumber(v,number));
             view.findViewById(R.id.action_sms).setOnClickListener(v->onClickSms(number));
+
+            ContextMenuInfo info = new ContextMenuInfo();
+            info.menu = CONTEXT_MENU_NUMBER;
+            info.extras = number;
+            view.setTag(info);
+            registerForContextMenu(view);
+
             phoneNumbersList.addView(view);
         }
         sectionNumber.setVisibility(View.VISIBLE);
@@ -258,11 +299,24 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         OpenActivity.sendSms(this,number.getNumber());
     }
 
-    private boolean onLongClickNumber(@NonNull PhoneNumber number) {
-        return false;
+    private boolean onLongClickNumber(@NonNull View view, @NonNull PhoneNumber number) {
+        // TODO: show context menu for number
+        String[] items = new String[2];
+        items[0] = getString(R.string.label_copy);
+        items[1] = !number.isPrimary() ? getString(R.string.label_set_default) : getString(R.string.label_unset_default);
+
+        ListPopups.showContextMenu(this,view,number.getNumber(),items,(menu,which)->{
+            if (0==which) {
+                copyToClipBoard(number.getNumber());
+            }
+            else if (1==which) {
+                changePhoneNumberPrimary(number);
+            }
+        });
+        return true;
     }
 
-    void makeVoiceCall(String number) {
+    private void makeVoiceCall(String number) {
         if (hasCallPermission()) {
             OpenActivity.makeVoiceCall(this,number);
         }
@@ -272,17 +326,32 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         }
     }
 
+    private void changePhoneNumberPrimary(PhoneNumber number) {
+        vm.togglePhoneNumberPrimary(number,new AsyncTask.AsyncTaskCallback(){
+            @Override
+            public void onError(AsyncTask task) {
+                Log.e(TAG,null,task.getError());
+            }
+
+            @Override
+            public void onResult(AsyncTask task) {
+                boolean saved = task.getResult();
+                if (saved) loadContact();
+            }
+        });
+    }
+
     ///////////////////////////////////////////////////////////////////////////////
     ///                           Section Email                                ///
     /////////////////////////////////////////////////////////////////////////////
 
-    View sectionEmail;
+    ViewGroup sectionEmail;
     GridLayout emailsList;
 
     void initSectionEmail() {
         sectionEmail = findViewById(R.id.section_email);
         ImageView icon = sectionEmail.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_alternate_email,getTheme()));
+        icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_email));
         emailsList = sectionEmail.findViewById(R.id.grid);
         emailsList.setColumnCount(1);
     }
@@ -298,7 +367,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
             primary.setText(email.getAddress());
             secondary.setText(email.getTypeLabel(getResources()));
             view.setOnClickListener(v->onCLickEmail(email));
-            view.setOnLongClickListener(v->onLongClickEmail(email));
+            view.setOnLongClickListener(v->onLongClickEmail(v,email));
             emailsList.addView(view);
         }
         sectionEmail.setVisibility(View.VISIBLE);
@@ -308,8 +377,14 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         OpenActivity.sendEmail(ContactDetailsActivity.this,email.getAddress());
     }
 
-    private boolean onLongClickEmail(@NonNull Email email) {
-        return false;
+    private boolean onLongClickEmail(@NonNull View view, @NonNull Email email) {
+        String[] items = new String[]{getString(R.string.label_copy)};
+        ListPopups.showContextMenu(this,view,email.getAddress(),items,(menu,which)->{
+            if (0==which) {
+                copyToClipBoard(email.getAddress());
+            }
+        });
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -324,7 +399,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         eventsList = sectionEvent.findViewById(R.id.grid);
         eventsList.setColumnCount(1);
         ImageView icon = sectionEvent.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_calendar_month,getTheme()));
+        icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_calendar_month));
     }
 
     void prepareSectionEvent(@Nullable List<Event> events) {
@@ -357,9 +432,9 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     void initSectionRelatives() {
         sectionRelation = findViewById(R.id.section_relation);
         relativesList = sectionRelation.findViewById(R.id.grid);
-        relativesList.setColumnCount(getResources().getInteger(R.integer.contact_details_grid_item_count));
+        relativesList.setColumnCount(1);
         ImageView icon = sectionRelation.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_relation,getTheme()));
+        icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_relation));
     }
 
     void prepareSectionRelative(@Nullable List<Relation> relations) {
@@ -367,13 +442,9 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         relativesList.removeAllViews();
         if (null == relations || relations.isEmpty()) return;
         for (Relation relation : relations) {
-            View view = getLayoutInflater().inflate(R.layout.contact_details_gird_item_image_two_lines_text,relativesList,false);
-            ImageView photo = view.findViewById(R.id.imageview);
+            View view = getLayoutInflater().inflate(R.layout.list_item_two_lines,relativesList,false);
             TextView primary = view.findViewById(R.id.text_primary);
             TextView secondary = view.findViewById(R.id.text_secondary);
-            Glide.with(photo).load(relation.getPhotoUri())
-                    .placeholder(getRoundedTextDrawable(photo,relation.getDisplayName()))
-                    .into(photo);
             primary.setText(relation.getDisplayName());
             secondary.setVisibility(View.VISIBLE);
             secondary.setText(relation.getTypeLabel(getResources()));
@@ -384,8 +455,8 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     }
 
     private void onClickRelation(@NonNull Relation relation) {
-        if (null != relation.getRelationContactUri())
-            OpenActivity.viewContactDetails(ContactDetailsActivity.this,relation.getRelationContactUri());
+        // TODO: pick contact by name if multiple contacts available
+        //  or show contact details if single contact exists
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -398,7 +469,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     void initSectionAddress() {
         sectionAddress = findViewById(R.id.section_address);
         ImageView icon = sectionAddress.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_location,getTheme()));
+        icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_location));
         addressesList = sectionAddress.findViewById(R.id.grid);
         addressesList.setColumnCount(getResources().getInteger(R.integer.contact_details_grid_item_count));
     }
@@ -408,35 +479,66 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         addressesList.removeAllViews();
         if (null == addresses || addresses.isEmpty()) return;
         for (PostalAddress address : addresses) {
-            // TODO: initialize address views and set listeners
+            View view = getLayoutInflater().inflate(R.layout.contact_details_gird_item_image_two_lines_text,addressesList,false);
+            ImageView icon = view.findViewById(R.id.imageview);
+            TextView primary = view.findViewById(R.id.text_primary);
+            icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_location));
+            ImageViewCompat.setImageTintList(icon, ColorStateList.valueOf(getResources().getColor(R.color.color_danger)));
+            primary.setText(address.getTypeLabel(getResources()));
+            view.setOnClickListener(v->onClickAddress(address));
+            addressesList.addView(view);
         }
         sectionAddress.setVisibility(View.VISIBLE);
     }
 
-    private void onClickAddress(@NonNull PostalAddress address) {}
+    private void onClickAddress(@NonNull PostalAddress address) {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(android.R.string.ok,null)
+                .setNegativeButton(android.R.string.search_go,(di,which)->
+                        OpenActivity.openMap(ContactDetailsActivity.this,address.getFormattedAddress()))
+                .setNeutralButton(android.R.string.copy,(di,which)->{
+                    copyToClipBoard(address.getFormattedAddress());
+                })
+                .setMessage(address.getFormattedAddress())
+                .show();
+    }
+
+
 
     ///////////////////////////////////////////////////////////////////////////////
     ///                         Section Organization                           ///
     /////////////////////////////////////////////////////////////////////////////
 
-    View sectionOrganization;
-    GridLayout organizationsList;
+    private View sectionOrganization;
+    private TextView organization;
 
     void initSectionOrganization() {
         sectionOrganization = findViewById(R.id.section_organization);
-        ImageView icon = sectionOrganization.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_organization,getTheme()));
-        organizationsList = sectionOrganization.findViewById(R.id.grid);
-        organizationsList.setColumnCount(getResources().getInteger(R.integer.contact_details_grid_item_count));
+        organization = sectionOrganization.findViewById(R.id.organization);
     }
 
-    void prepareSectionOrganization(@Nullable List<Organization> organizations) {
-        organizationsList.setVisibility(View.GONE);
-        if (null == organizations || organizations.isEmpty()) return;
-        for (Organization org : organizations) {
-            // TODO: initialize organization views and set listeners
-        }
-        organizationsList.setVisibility(View.VISIBLE);
+    void prepareSectionOrganization(@Nullable Organization org) {
+        sectionOrganization.setVisibility(View.GONE);
+        organization.setText(null);
+        if (null == org) return;
+        organization.setText(org.buildDisplayText());
+        organization.setOnClickListener(v->onClickOrganization(org));
+        organization.setOnLongClickListener(v->onLongClickOrganization(v,org));
+        sectionOrganization.setVisibility(View.VISIBLE);
+    }
+
+    private void onClickOrganization(@NonNull Organization org) {
+        OpenActivity.searchWeb(this,org.buildDisplayText());
+    }
+
+    private boolean onLongClickOrganization(@NonNull View view, @NonNull Organization org) {
+        String[] items = new String[]{getString(R.string.label_copy)};
+        ListPopups.showContextMenu(this,view,org.buildDisplayText(),items,(menu,which)->{
+            if (0==which){
+                copyToClipBoard(org.buildDisplayText());
+            }
+        });
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -451,22 +553,28 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         websitesList = sectionWebsite.findViewById(R.id.grid);
         websitesList.setColumnCount(1);
         ImageView icon = sectionWebsite.findViewById(R.id.section_icon);
-        icon.setImageDrawable(VectorDrawableCompat.create(getResources(),R.drawable.ic_baseline_http,getTheme()));
+        icon.setImageDrawable(DrawableUtil.vectorDrawable(this,R.drawable.ic_baseline_website));
     }
 
     void prepareSectionWebsite(@Nullable List<Website> websites) {
-        websitesList.setVisibility(View.GONE);
+        sectionWebsite.setVisibility(View.GONE);
+        websitesList.removeAllViews();
         if (null == websites || websites.isEmpty()) return;
         for (Website site : websites) {
-            View view = getLayoutInflater().inflate(android.R.layout.simple_list_item_1,websitesList,true);
-            TextView primary = view.findViewById(android.R.id.text1);
+            View view = getLayoutInflater().inflate(R.layout.list_item_two_lines,websitesList,false);
+            view.findViewById(R.id.text_secondary).setVisibility(View.GONE);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            secondary.setVisibility(View.GONE);
+            TextView primary = view.findViewById(R.id.text_primary);
             primary.setText(site.getUrl());
             view.setOnClickListener(v->onClickWebsite(site));
+            websitesList.addView(view);
         }
-        websitesList.setVisibility(View.VISIBLE);
+        sectionWebsite.setVisibility(View.VISIBLE);
     }
 
-    private void onClickWebsite(@NonNull Website website) {}
+    private void onClickWebsite(@NonNull Website website) {
+    }
 
     ///////////////////////////////////////////////////////////////////////////////
     ///                           Section Note                                 ///
@@ -477,7 +585,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
     void initSectionNote() {
         sectionNote = findViewById(R.id.section_note);
-        note = sectionNote.findViewById(R.id.textview);
+        note = sectionNote.findViewById(R.id.note);
     }
 
     void prepareSectionNote(Note data) {
@@ -496,11 +604,39 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     ///                              Others                                    ///
     /////////////////////////////////////////////////////////////////////////////
 
-    boolean checkContactLoaded() {
+    private boolean checkContactLoaded() {
         if (null == details) {
             Toast.makeText(this,R.string.message_contact_not_loaded,Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
+    }
+
+    private void copyToClipBoard(String text) {
+        if (Check.isEmptyString(text)) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            android.text.ClipboardManager manager = (android.text.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            manager.setText(text);
+        }
+        else {
+            android.content.ClipboardManager manager = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            manager.setPrimaryClip(android.content.ClipData.newPlainText("Address",text));
+        }
+        Toast.makeText(this, R.string.message_copied_to_clipboard,Toast.LENGTH_SHORT).show();
+    }
+
+    private static final int CONTEXT_MENU_NUMBER = 1;
+
+    private static final int CONTEXT_MENU_EMAIL = 2;
+
+    private static final int CONTEXT_MENU_EVENT = 3;
+
+    private static final int ITEM_COPY = 1;
+
+    private static final int ITEM_SET_UNSET_PRIMARY = 2;
+
+    private static class ContextMenuInfo {
+        int menu;
+        Object extras;
     }
 }

@@ -3,11 +3,11 @@ package rahulstech.android.phonebook.model;
 import android.content.res.Resources;
 import android.provider.ContactsContract;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.util.Check;
 
 public class Event {
-
-    private String lookupKey;
 
     private long id;
 
@@ -17,8 +17,7 @@ public class Event {
 
     private CharSequence typeLabel;
 
-    public Event(String lookupKey, long id, String startDate, int type, CharSequence typeLabel) {
-        this.lookupKey = lookupKey;
+    public Event(long id, String startDate, int type, CharSequence typeLabel) {
         this.id = id;
         this.startDate = startDate;
         this.type = type;
@@ -26,10 +25,6 @@ public class Event {
     }
 
     public Event(){}
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
 
     public long getId() {
         return id;
@@ -73,8 +68,17 @@ public class Event {
         if (!(o instanceof Event)) return false;
         Event event = (Event) o;
         return id == event.id && type == event.type
-                && Check.isEquals(lookupKey, event.lookupKey)
                 && Check.isEquals(startDate, event.startDate)
                 && Check.isEquals(typeLabel, event.typeLabel);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", startDate='" + startDate + '\'' +
+                ", type=" + type +
+                ", typeLabel=" + typeLabel +
+                '}';
     }
 }

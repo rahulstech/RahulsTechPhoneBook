@@ -6,13 +6,44 @@
     android:layout_height="match_parent"
     tools:context=".ContactsListActivity">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_scrollFlags="scroll|enterAlways"
+            tools:title="@string/app_name"
+            tools:menu="@menu/menu_contact_list"/>
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_contacts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/gap_medium"
+            android:layout_marginEnd="@dimen/gap_medium"
+            android:layout_marginTop="@dimen/gap_small"
+            android:layout_marginBottom="@dimen/gap_small"
+            android:inputType="textPersonName"
+            app:queryBackground="@null"
+            android:background="@drawable/two_side_rounded_outline"
+            app:iconifiedByDefault="false"
+            app:queryHint="@android:string/search_go" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contact_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?android:attr/actionBarSize"
         tools:listitem="@layout/contact_list_item_contact"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         tools:itemCount="60"/>
+
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_add_contact"
@@ -24,7 +55,6 @@
         app:tint="@color/white"
         app:fabCustomSize="@dimen/clickable_icon_size_medium"
         app:elevation="6dp"
-        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
         app:layout_anchor="@id/contact_list"
         app:layout_anchorGravity="end|bottom"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -25,13 +25,13 @@ public class ContactDetails {
     private List<Event> events;
 
     @Nullable
-    private List<Relation> relatives;
+    private List<Relation> relations;
 
     @Nullable
     private List<PostalAddress> addresses;
 
     @Nullable
-    private List<Organization> organizations;
+    private Organization organization;
 
     @Nullable
     private List<Website> websites;
@@ -39,9 +39,22 @@ public class ContactDetails {
     @Nullable
     private Note note;
 
+    @Deprecated
     public ContactDetails(RawContact rawContact, Contact contact) {
         this.rawContact = rawContact;
         this.contact = contact;
+    }
+
+    public ContactDetails(Contact contact) {
+        this.contact = contact;
+    }
+
+    public void setRawContact(RawContact rawContact) {
+        this.rawContact = rawContact;
+    }
+
+    public RawContact getRawContact() {
+        return rawContact;
     }
 
     public RawContact getAccount() {
@@ -61,7 +74,7 @@ public class ContactDetails {
     }
 
     public String getDisplayName() {
-        return contact.getDisplayName();
+        return null == name ? Name.UNKNOWN_NAME.getDisplayName() : name.getDisplayName();
     }
 
     public Uri getPhotoUri() {
@@ -96,12 +109,12 @@ public class ContactDetails {
     }
 
     @Nullable
-    public List<Relation> getRelatives() {
-        return relatives;
+    public List<Relation> getRelations() {
+        return relations;
     }
 
-    public void setRelatives(List<Relation> relatives) {
-        this.relatives = relatives;
+    public void setRelations(List<Relation> relations) {
+        this.relations = relations;
     }
 
     public void setAddresses(@Nullable List<PostalAddress> addresses) {
@@ -114,12 +127,12 @@ public class ContactDetails {
     }
 
     @Nullable
-    public List<Organization> getOrganizations() {
-        return organizations;
+    public Organization getOrganization() {
+        return organization;
     }
 
-    public void setOrganizations(@Nullable List<Organization> organizations) {
-        this.organizations = organizations;
+    public void setOrganization(@Nullable Organization organization) {
+        this.organization = organization;
     }
 
     @Nullable
@@ -155,9 +168,9 @@ public class ContactDetails {
                 && Check.isEquals(phoneNumbers, details.phoneNumbers)
                 && Check.isEquals(emails, details.emails)
                 && Check.isEquals(events,details.events)
-                && Check.isEquals(relatives,details.relatives)
+                && Check.isEquals(relations,details.relations)
                 && Check.isEquals(addresses,details.addresses)
-                && Check.isEquals(organizations,details.organizations)
+                && Check.isEquals(organization,details.organization)
                 && Check.isEquals(websites,details.websites)
                 && Check.isEquals(note,note);
     }

@@ -1,10 +1,13 @@
 package rahulstech.android.phonebook.model;
 
+import android.provider.ContactsContract;
+
 import rahulstech.android.phonebook.util.Check;
 
 public class Name {
 
-    private String lookupKey;
+    public static final Name UNKNOWN_NAME = new Name(0,"Unknown","Unknown",
+            null,null,null,null,null,null,null);
 
     private long id;
 
@@ -26,8 +29,9 @@ public class Name {
 
     private String phoneticFamilyName;
 
-    public Name(String lookupKey, long id, String displayName, String givenName, String familyName, String prefix, String middleName, String suffix, String phoneticGivenName, String phoneticMiddleName, String phoneticFamilyName) {
-        this.lookupKey = lookupKey;
+    private String nickname;
+
+    public Name(long id, String displayName, String givenName, String familyName, String prefix, String middleName, String suffix, String phoneticGivenName, String phoneticMiddleName, String phoneticFamilyName) {
         this.id = id;
         this.displayName = displayName;
         this.givenName = givenName;
@@ -40,25 +44,7 @@ public class Name {
         this.phoneticFamilyName = phoneticFamilyName;
     }
 
-    public Name(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public Name(String givenName, String familyName, String prefix, String middleName, String suffix) {
-        this.givenName = givenName;
-        this.familyName = familyName;
-        this.prefix = prefix;
-        this.middleName = middleName;
-        this.suffix = suffix;
-    }
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
-
-    public void setLookupKey(String lookupKey) {
-        this.lookupKey = lookupKey;
-    }
+    public Name() {}
 
     public long getId() {
         return id;
@@ -140,13 +126,20 @@ public class Name {
         this.phoneticFamilyName = phoneticFamilyName;
     }
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Name)) return false;
         Name name = (Name) o;
         return id == name.id
-                && Check.isEquals(lookupKey, name.lookupKey)
                 && Check.isEquals(displayName, name.displayName)
                 && Check.isEquals(givenName, name.givenName)
                 && Check.isEquals(familyName, name.familyName)
@@ -155,6 +148,40 @@ public class Name {
                 && Check.isEquals(suffix, name.suffix)
                 && Check.isEquals(phoneticGivenName, name.phoneticGivenName)
                 && Check.isEquals(phoneticMiddleName, name.phoneticMiddleName)
-                && Check.isEquals(phoneticFamilyName, name.phoneticFamilyName);
+                && Check.isEquals(phoneticFamilyName, name.phoneticFamilyName)
+                && Check.isEquals(nickname,name.nickname);
+    }
+
+    @Override
+    public String toString() {
+        return "Name{" +
+                "id=" + id +
+                ", displayName='" + displayName + '\'' +
+                ", givenName='" + givenName + '\'' +
+                ", familyName='" + familyName + '\'' +
+                ", prefix='" + prefix + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", suffix='" + suffix + '\'' +
+                ", phoneticGivenName='" + phoneticGivenName + '\'' +
+                ", phoneticMiddleName='" + phoneticMiddleName + '\'' +
+                ", phoneticFamilyName='" + phoneticFamilyName + '\'' +
+                ", nickname='" + nickname + '\'' +
+                '}';
+    }
+
+    public void buildDisplayName() {
+        this.displayName = buildDisplayName(true);
+    }
+
+    public String buildDisplayName(boolean firstNameFirst) {
+        String displayName = "";
+        if (!Check.isEmptyString(prefix)) displayName += prefix;
+        if (firstNameFirst && !Check.isEmptyString(givenName)) displayName += " "+givenName;
+        else if (!firstNameFirst && !Check.isEmptyString(familyName)) displayName += " "+familyName;
+        if (!Check.isEmptyString(middleName)) displayName += " "+middleName;
+        if (!firstNameFirst && !Check.isEmptyString(givenName)) displayName += " "+givenName;
+        else if (firstNameFirst && !Check.isEmptyString(familyName)) displayName += " "+familyName;
+        if (!Check.isEmptyString(suffix)) displayName += " "+suffix;
+        return displayName;
     }
 }

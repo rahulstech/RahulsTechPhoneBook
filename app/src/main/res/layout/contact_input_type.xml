@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_corner_outline_all_side">
+
+    <Button
+        android:id="@+id/types"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_size_secondary_small"
+        android:background="?attr/selectableItemBackground"
+        app:drawableRightCompat="@drawable/ic_baseline_arrow_drop_down_24"
+        android:gravity="center"
+        android:textAlignment="center"
+        tools:text="Home"/>
+
+</FrameLayout>

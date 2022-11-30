@@ -14,7 +14,7 @@
         android:layout_width="@dimen/clickable_icon_size_tiny"
         android:layout_height="@dimen/clickable_icon_size_tiny"
         android:layout_margin="@dimen/gap_tiny"
-        tools:src="@mipmap/placeholder_contact_photo"
+        tools:src="@tools:sample/avatars"
         app:shapeAppearanceOverlay="@style/Theme.RahulsTechPhoneBook.RoundedPhoto"/>
 
     <TextView

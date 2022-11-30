@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:tools="http://schemas.android.com/tools"
+<com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_bar"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardElevation="4dp"
-    app:cardCornerRadius="0dp"
-    tools:context=".ContactInputActivity">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/toolbar"
@@ -15,7 +13,8 @@
         android:gravity="center"
         android:paddingStart="@dimen/gap_small"
         android:paddingEnd="@dimen/gap_small"
-        android:layout_height="?attr/actionBarSize">
+        android:layout_height="?attr/actionBarSize"
+        tools:context=".ContactInputActivity">
 
         <ImageButton
             android:id="@+id/button_cancel"
@@ -31,7 +30,6 @@
             android:layout_weight="1"
             android:padding="@dimen/gap_small"
             android:textSize="24sp"
-            android:textColor="?colorOnBackground"
             tools:text="New Contact"/>
         <Button
             android:id="@+id/button_save"
@@ -42,4 +40,4 @@
 
     </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+</com.google.android.material.appbar.AppBarLayout>

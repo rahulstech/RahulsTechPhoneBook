@@ -1,6 +1,6 @@
 package rahulstech.android.phonebook.util;
 
-public class Check {
+public class  Check {
 
     public static boolean isEquals(Object l, Object r){
         return l == r || null != l && l.equals(r);

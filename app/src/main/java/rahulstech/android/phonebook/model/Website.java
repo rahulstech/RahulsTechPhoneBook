@@ -1,28 +1,22 @@
 package rahulstech.android.phonebook.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.util.Check;
 
 public class Website {
-    
-    private String lookupKey;
-    
+
     private long id;
 
     @NonNull
     private String url;
 
-    public Website(String lookupKey, long id, String url) {
-        this.lookupKey = lookupKey;
+    public Website(long id, String url) {
         this.id = id;
         this.url = url;
     }
 
     public Website() {}
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
 
     public long getId() {
         return id;
@@ -46,7 +40,7 @@ public class Website {
         if (this == o) return true;
         if (!(o instanceof Website)) return false;
         Website website = (Website) o;
-        return Check.isEquals(lookupKey, website.lookupKey)
+        return id == website.id
                 && Check.isEquals(url, website.url);
     }
 }

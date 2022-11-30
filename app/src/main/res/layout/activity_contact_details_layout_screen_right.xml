@@ -6,6 +6,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/display_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:padding="@dimen/gap_medium"
+        android:textSize="@dimen/text_size_primary"
+        android:textColor="?attr/colorOnBackground"
+        android:textAlignment="center"
+        tools:text="@tools:sample/full_names"/>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="2dp"/>
+
+    <!-- section name -->
+
+    <include android:id="@+id/section_name"
+        layout="@layout/contact_details_section" />
+
     <!-- section phone numbers -->
 
     <include android:id="@+id/section_phone_number"
@@ -33,8 +54,35 @@
 
     <!-- section organizations -->
 
-    <include android:id="@+id/section_organization"
-        layout="@layout/contact_details_section"/>
+    <LinearLayout
+        android:id="@+id/section_organization"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gap_medium"
+        android:paddingEnd="@dimen/gap_small"
+        android:layout_marginTop="@dimen/gap_small"
+        android:layout_marginBottom="@dimen/gap_small"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="@dimen/clickable_icon_size_tiny"
+            android:layout_height="@dimen/clickable_icon_size_tiny"
+            android:layout_margin="@dimen/gap_tiny"
+            android:layout_weight="0"
+            app:tint="@color/color_mute"
+            app:srcCompat="@drawable/ic_baseline_organization"/>
+
+        <TextView
+            android:id="@+id/organization"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/gap_small"
+            android:paddingRight="@dimen/gap_small"
+            android:textSize="@dimen/text_size_secondary"/>
+    </LinearLayout>
 
     <!-- section websites -->
 
@@ -62,12 +110,13 @@
             android:layout_margin="@dimen/gap_tiny"
             android:layout_weight="0"
             app:tint="@color/color_mute"
-            tools:src="@drawable/ic_baseline_note"/>
+            app:srcCompat="@drawable/ic_baseline_note"/>
 
         <TextView
-            android:id="@+id/textview"
-            android:layout_width="0dp"
+            android:id="@+id/note"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:paddingLeft="@dimen/gap_small"
             android:paddingRight="@dimen/gap_small"
             android:textSize="@dimen/text_size_secondary"/>

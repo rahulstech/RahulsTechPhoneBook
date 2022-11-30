@@ -6,9 +6,9 @@
     android:layout_height="match_parent"
     tools:context=".ContactInputActivity">
 
-    <include layout="@layout/activity_content_input_header"/>
+    <include layout="@layout/contact_input_actionbar"/>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
                 android:layout_margin="@dimen/gap_medium"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <include layout="@layout/activity_content_input_layout_screen_left"/>
 
@@ -36,5 +36,5 @@
 
         </LinearLayout>
 
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

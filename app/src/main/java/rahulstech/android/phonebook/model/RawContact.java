@@ -32,6 +32,11 @@ public class RawContact {
         this.type = type;
     }
 
+    public RawContact(String type, String name) {
+        this.type = type;
+        this.name = name;
+    }
+
     public String getLookupKey() {
         return lookupKey;
     }

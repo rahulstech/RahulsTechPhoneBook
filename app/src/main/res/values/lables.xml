@@ -4,7 +4,7 @@
     <string name="label_address">Address</string>
     <string name="label_mobile">Phone Number</string>
     <string name="label_email">Email</string>
-    <string name="label_relation">Relation</string>
+    <string name="label_relation">Relative</string>
     <string name="label_event">Event</string>
     <string name="label_website">Website</string>
     <string name="label_organization">Organization</string>
@@ -42,4 +42,26 @@
     <string name="label_edit_contact">Edit Contact</string>
     <string name="label_create_contact">New Contact</string>
     <string name="label_display_name">Name</string>
+    <string name="label_city">City</string>
+    <string name="label_state">State</string>
+    <string name="label_country">Country</string>
+    <string name="label_street">Street</string>
+    <string name="label_neighbourhood">Nighbourhood</string>
+    <string name="label_pobox">Post Box</string>
+    <string name="label_pincode">Pin Code</string>
+    <string name="label_phonetic_middle_name">Phonetic Middle Name</string>
+    <string name="label_phonetic_last_name">Phonetic Last Name</string>
+    <string name="label_nickname">Nickname</string>
+    <string name="label_phonetic_first_name">Phonetic First Name</string>
+    <string name="label_ordering">Ordering</string>
+    <string name="label_settings">Settings</string>
+    <string name="label_order_firstname_first">First Name First</string>
+    <string name="label_order_lastname_first">Last Name First</string>
+    <string name="label_order_desc">Descending</string>
+    <string name="label_order_asc">Ascending</string>
+    <string name="label_company">Company</string>
+    <string name="label_organization_title">Title</string>
+    <string name="label_organization_department">Department</string>
+    <string name="label_set_default">Set as default</string>
+    <string name="label_copy">Copy</string>
 </resources>

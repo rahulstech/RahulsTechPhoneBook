@@ -1,13 +1,10 @@
 package rahulstech.android.phonebook.model;
 
-import android.content.res.Resources;
-import android.provider.ContactsContract;
-
 import rahulstech.android.phonebook.util.Check;
 
-public class Organization {
+import static rahulstech.android.phonebook.util.Helpers.anyNonEmpty;
 
-    private String lookupKey;
+public class Organization {
 
     private long id;
 
@@ -17,35 +14,14 @@ public class Organization {
 
     private String department;
 
-    private String jobDescription;
-
-    private String officeLocation;
-
-    private int type;
-
-    private CharSequence typeLabel;
-
-    public Organization(String lookupKey, long id, String company, String title, String department, String jobDescription, String officeLocation, int type, CharSequence typeLabel) {
-        this.lookupKey = lookupKey;
+    public Organization(long id, String company, String title, String department) {
         this.id = id;
         this.company = company;
         this.title = title;
         this.department = department;
-        this.jobDescription = jobDescription;
-        this.officeLocation = officeLocation;
-        this.type = type;
-        this.typeLabel = typeLabel;
     }
 
     public Organization(){}
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
-
-    public void setLookupKey(String lookupKey) {
-        this.lookupKey = lookupKey;
-    }
 
     public long getId() {
         return id;
@@ -79,40 +55,16 @@ public class Organization {
         this.department = department;
     }
 
-    public String getJobDescription() {
-        return jobDescription;
+    public String buildDisplayText() {
+        StringBuilder display = new StringBuilder();
+        if (!Check.isEmptyString(company)) display.append(company);
+        if (!Check.isEmptyString(title)) display.append('\n').append(title);
+        if (!Check.isEmptyString(department)) display.append('\n').append(department);
+        return display.toString();
     }
 
-    public void setJobDescription(String jobDescription) {
-        this.jobDescription = jobDescription;
-    }
-
-    public String getOfficeLocation() {
-        return officeLocation;
-    }
-
-    public void setOfficeLocation(String officeLocation) {
-        this.officeLocation = officeLocation;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public CharSequence getTypeLabel() {
-        return typeLabel;
-    }
-
-    public CharSequence getTypeLabel(Resources res) {
-        return ContactsContract.CommonDataKinds.Organization.getTypeLabel(res,type,typeLabel);
-    }
-
-    public void setTypeLabel(CharSequence typeLabel) {
-        this.typeLabel = typeLabel;
+    public boolean hasValues() {
+        return anyNonEmpty(company,title,department);
     }
 
     @Override
@@ -121,13 +73,8 @@ public class Organization {
         if (!(o instanceof Organization)) return false;
         Organization that = (Organization) o;
         return id == that.id
-                && Check.isEquals(lookupKey, that.lookupKey)
                 && Check.isEquals(company, that.company)
                 && Check.isEquals(title, that.title)
-                && Check.isEquals(department, that.department)
-                && Check.isEquals(jobDescription, that.jobDescription)
-                && Check.isEquals(officeLocation, that.officeLocation)
-                && type == that.type
-                && Check.isEquals(typeLabel,that.typeLabel);
+                && Check.isEquals(department, that.department);
     }
 }

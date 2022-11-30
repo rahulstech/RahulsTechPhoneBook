@@ -3,22 +3,30 @@ package rahulstech.android.phonebook.model;
 import android.net.Uri;
 import android.provider.ContactsContract;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import rahulstech.android.phonebook.util.Check;
 
 public class ContactDisplay {
-    // TODO: creating section by display name has problem, display name label may be used instead
     private Contact contact;
+
+    private Name name;
 
     private PhoneNumber phoneNumberPrimary;
 
-    private List<PhoneNumber> phoneNumbers = Collections.EMPTY_LIST;
+    @NonNull
+    private List<PhoneNumber> phoneNumbers;
 
-    public ContactDisplay(Contact contact, List<PhoneNumber> numbers) {
+    public ContactDisplay(Contact contact) {
         this.contact = contact;
-        setPhoneNumbers(numbers);
+        this.phoneNumbers = new ArrayList<>();
+    }
+
+    public void setName(Name name) {
+        this.name = name;
     }
 
     public Contact getContact() {
@@ -29,44 +37,36 @@ public class ContactDisplay {
         return contact.getId();
     }
 
-    public String getDisplayName() {
-        return contact.getDisplayName();
+    public String getDisplayName(boolean primary) {
+        return primary ? contact.getDisplayNamePrimary() : contact.getDisplayNameAlternative();
+    }
+
+    public Name getName() {
+        return name;
     }
 
     public Uri getThumbnailUri() {
         return contact.getPhotoUri();
     }
 
-    public boolean hasPhoneNumber() {
-        return !phoneNumbers.isEmpty();
+    public void addPhoneNumber(PhoneNumber number) {
+        if (null != number) phoneNumbers.add(number);
     }
 
     public List<PhoneNumber> getPhoneNumbers() {
         return phoneNumbers;
     }
 
-    public void setPhoneNumbers(List<PhoneNumber> phoneNumbers) {
-        this.phoneNumbers = phoneNumbers;
-        if (null == phoneNumbers) this.phoneNumbers = Collections.EMPTY_LIST;
-        List<PhoneNumber> numbers = this.phoneNumbers;
-        PhoneNumber primary = null;
-        if (numbers.size()==1) primary = numbers.get(0);
-        else {
-            for (PhoneNumber pn : numbers) {
-                if (pn.isPrimary()) {
-                    primary = pn;
-                    break;
-                }
-            }
-        }
-        this.phoneNumberPrimary = primary;
+    public void setPhoneNumberPrimary(PhoneNumber number) {
+        this.phoneNumberPrimary = number;
     }
 
     public boolean hasPhoneNumberPrimary() {
-        return null != phoneNumberPrimary;
+        return null != phoneNumberPrimary || 1==phoneNumbers.size();
     }
 
     public PhoneNumber getPhoneNumberPrimary() {
+        if (null == phoneNumberPrimary && 1==phoneNumbers.size()) return phoneNumbers.get(0);
         return phoneNumberPrimary;
     }
 
@@ -80,6 +80,8 @@ public class ContactDisplay {
         if (!(o instanceof ContactDisplay)) return false;
         ContactDisplay that = (ContactDisplay) o;
         return Check.isEquals(contact,that.contact)
+                && Check.isEquals(name,that.name)
+                && Check.isEquals(phoneNumberPrimary,that.phoneNumberPrimary)
                 && Check.isEquals(phoneNumbers,that.phoneNumbers);
     }
 }

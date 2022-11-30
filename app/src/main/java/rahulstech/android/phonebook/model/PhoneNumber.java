@@ -8,8 +8,6 @@ import rahulstech.android.phonebook.util.Check;
 
 public class PhoneNumber {
 
-    private String lookupKey;
-
     private long id;
 
     private String number;
@@ -18,35 +16,17 @@ public class PhoneNumber {
 
     private int type;
 
-    private CharSequence typeLable;
+    private CharSequence typeLabel;
 
-    public PhoneNumber(String lookupKey, long id, String number, boolean primary, int type, CharSequence typeLable) {
-        this.lookupKey = lookupKey;
+    public PhoneNumber(long id, String number, boolean primary, int type, CharSequence typeLabel) {
         this.id = id;
         this.number = number;
         this.primary = primary;
         this.type = type;
-        this.typeLable = typeLable;
+        this.typeLabel = typeLabel;
     }
 
     public PhoneNumber() {}
-
-    public PhoneNumber(@NonNull PhoneNumber copy) {
-        this.lookupKey = copy.lookupKey;
-        this.id = copy.id;
-        this.number = copy.number;
-        this.primary = copy.primary;
-        this.type = copy.type;
-        this.typeLable = copy.typeLable;
-    }
-
-    public String getLookupKey() {
-        return lookupKey;
-    }
-
-    public void setLookupKey(String lookupKey) {
-        this.lookupKey = lookupKey;
-    }
 
     public long getId() {
         return id;
@@ -81,15 +61,15 @@ public class PhoneNumber {
     }
 
     public CharSequence getTypeLabel() {
-        return typeLable;
+        return typeLabel;
     }
 
-    public void setTypeLable(CharSequence typeLable) {
-        this.typeLable = typeLable;
+    public void setTypeLabel(CharSequence typeLabel) {
+        this.typeLabel = typeLabel;
     }
 
     public CharSequence getTypeLabel(Resources res) {
-        return ContactsContract.CommonDataKinds.Phone.getTypeLabel(res,type,typeLable);
+        return ContactsContract.CommonDataKinds.Phone.getTypeLabel(res,type, typeLabel);
     }
 
     @Override
@@ -100,20 +80,18 @@ public class PhoneNumber {
         return id == number1.id
                 && primary == number1.primary
                 && type == number1.type
-                && Check.isEquals(lookupKey, number1.lookupKey)
                 && Check.isEquals(number, number1.number)
-                && Check.isEquals(typeLable, number1.typeLable);
+                && Check.isEquals(typeLabel, number1.typeLabel);
     }
 
     @Override
     public String toString() {
         return "PhoneNumber{" +
-                "lookupKey='" + lookupKey + '\'' +
                 ", id=" + id +
                 ", number='" + number + '\'' +
                 ", primary=" + primary +
                 ", type=" + type +
-                ", typeLable=" + typeLable +
+                ", typeLable=" + typeLabel +
                 '}';
     }
 }
