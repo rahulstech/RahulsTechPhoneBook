@@ -1,21 +1,13 @@
 package rahulstech.android.phonebook.model;
 
-import android.accounts.AccountManager;
-import android.accounts.AuthenticatorDescription;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
-
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import rahulstech.android.phonebook.util.Check;
 
 public class RawContact {
 
-    // TODO: compute the type name for account
-    // for example type=com.google typename = Google
+    public static final RawContact ALL_SOURCE = new RawContact(null,null,"All");
 
-    private String lookupKey;
+    private long contactId;
 
     private long id;
 
@@ -23,22 +15,32 @@ public class RawContact {
 
     private String type;
 
-    private Drawable logo;
+    private String displayName;
 
-    public RawContact(String lookupKey, long id, String name, String type) {
-        this.lookupKey = lookupKey;
+    public RawContact(long contactId, long id, String name, String type) {
+        this.contactId = contactId;
         this.id = id;
         this.name = name;
         this.type = type;
     }
 
-    public RawContact(String type, String name) {
-        this.type = type;
-        this.name = name;
+    public RawContact(@NonNull RawContact src) {
+        Check.isNonNull(src,"null == source");
+        this.contactId = src.contactId;
+        this.id = src.id;
+        this.name = src.name;
+        this.type = src.type;
+        this.displayName = src.displayName;
     }
 
-    public String getLookupKey() {
-        return lookupKey;
+    public RawContact(String type, String name, String displayName) {
+        this.type = type;
+        this.name = name;
+        this.displayName = displayName;
+    }
+
+    public long getContactId() {
+        return contactId;
     }
 
     public long getId() {
@@ -53,27 +55,12 @@ public class RawContact {
         return type;
     }
 
-    public Drawable getLogo(@NonNull Context context) {
-        Check.isNonNull(context,"null == context");
-        if (null == logo) {
-            AccountManager am = ContextCompat.getSystemService(context,AccountManager.class);
-            if (null != am) {
-                AuthenticatorDescription[] descriptions = am.getAuthenticatorTypes();
-                if (null != descriptions) {
-                    PackageManager pm = context.getPackageManager();
-                    for (AuthenticatorDescription d : descriptions) {
-                        if (d.type.equals(type)) {
-                            try {
-                                return pm.getApplicationLogo(d.packageName);
-                            } catch (Exception ignore) {
-                                logo = null;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return logo;
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     @Override
@@ -82,8 +69,19 @@ public class RawContact {
         if (!(o instanceof RawContact)) return false;
         RawContact rawContact = (RawContact) o;
         return id == rawContact.id
-                && Check.isEquals(lookupKey, rawContact.lookupKey)
+                && Check.isEquals(contactId, rawContact.contactId)
                 && Check.isEquals(name, rawContact.name)
                 && Check.isEquals(type, rawContact.type);
+    }
+
+    @Override
+    public String toString() {
+        return "RawContact{" +
+                "contactId=" + contactId +
+                ", id=" + id +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", displayName='" + displayName + '\'' +
+                '}';
     }
 }

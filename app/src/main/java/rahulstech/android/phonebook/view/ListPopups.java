@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
@@ -18,11 +19,12 @@ import androidx.core.widget.PopupWindowCompat;
 import rahulstech.android.phonebook.R;
 import rahulstech.android.phonebook.util.Check;
 
+import static rahulstech.android.phonebook.util.Helpers.dpToPx;
+import static rahulstech.android.phonebook.util.Helpers.logDebug;
+
 public class ListPopups {
 
-    private static float dpToPx(@NonNull Context context, float dp) {
-        return context.getResources().getDisplayMetrics().density*dp;
-    }
+    private static final String TAG = "ListPopup";
 
     public static PopupWindow showContextMenu(@NonNull Context context, @NonNull View anchor, @Nullable String title,
                                               @NonNull ListAdapter adapter, @Nullable OnMenuItemClickListener itemClickListener) {
@@ -51,8 +53,25 @@ public class ListPopups {
             popup.dismiss();
         });
 
-        // TODO: choose gravity accordingly
-        PopupWindowCompat.showAsDropDown(popup,anchor,0,0, Gravity.NO_GRAVITY);
+        view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        int menuHeight = view.getMeasuredHeight();
+
+        int anchorHeight = anchor.getMeasuredHeight();
+        ViewGroup.MarginLayoutParams anchorParams = (ViewGroup.MarginLayoutParams) anchor.getLayoutParams();
+        int[] anchorLocation = new int[2];
+        anchor.getLocationOnScreen(anchorLocation);
+        int anchorX = anchorLocation[0];
+        int anchorTopY = anchorLocation[1];
+        int anchorBottomY = anchorLocation[1]+anchorHeight;
+        int screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+        int screenBelowAnchor = screenHeight-anchorBottomY;
+        int menuX = anchorX;
+        int menuY = screenBelowAnchor > menuHeight ? anchorBottomY : anchorTopY-menuHeight;
+
+        logDebug(TAG, "screenBelowAnchor: "+screenBelowAnchor+" menuHeight: "+menuHeight+" (menuX,menuY): ("+menuX+","+menuY+")");
+
+        popup.showAtLocation(anchor,Gravity.NO_GRAVITY,menuX,menuY);
 
         return popup;
     }

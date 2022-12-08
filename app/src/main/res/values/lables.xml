@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="label_note">Note</string>
-    <string name="label_address">Address</string>
-    <string name="label_mobile">Phone Number</string>
-    <string name="label_email">Email</string>
-    <string name="label_relation">Relative</string>
-    <string name="label_event">Event</string>
-    <string name="label_website">Website</string>
-    <string name="label_organization">Organization</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_remove">Remove</string>
+    <string name="label_copy">Copy</string>
+    <string name="label_ok">Ok</string>
     <string name="label_save">Save</string>
-    <string name="label_custom">Custom</string>
+    <string name="label_intent_chooser">Complete Action With</string>
+    <string name="label_choose_voice_call_number">Call To</string>
+    <string name="label_choose_sms_number">Sms To</string>
+
+
+    <!-- TODO: delete fields
     <string name="add_email">Add Email</string>
     <string name="add_number">Add Number</string>
     <string name="add_relation">Add Relation</string>
@@ -23,45 +22,52 @@
     <string name="add_address">Add Address</string>
     <string name="add_organization">Add Organization</string>
     <string name="add_website">Add Website</string>
-    <string name="label_prefix">Prefix</string>
-    <string name="label_first_name">First Name</string>
-    <string name="label_middle_name">Middle Name</string>
-    <string name="label_last_name">Last Name</string>
     <string name="add_note">Add Note</string>
-    <string name="label_view_more">View More</string>
-    <string name="label_intent_chooser">Complete Action With</string>
-    <string name="label_choose_voice_call_number">Call To</string>
-    <string name="label_choose_sms_number">Sms To</string>
-    <string name="label_share">Share</string>
-    <string name="label_edit">Edit</string>
-    <string name="label_include_year">Include Year</string>
-    <string name="label_label">Label</string>
-    <string name="label_event_state_date">Start Date</string>
-    <string name="label_suffix">Suffix</string>
-    <string name="label_delete">Delete</string>
-    <string name="label_edit_contact">Edit Contact</string>
-    <string name="label_create_contact">New Contact</string>
-    <string name="label_display_name">Name</string>
-    <string name="label_city">City</string>
-    <string name="label_state">State</string>
-    <string name="label_country">Country</string>
-    <string name="label_street">Street</string>
-    <string name="label_neighbourhood">Nighbourhood</string>
-    <string name="label_pobox">Post Box</string>
-    <string name="label_pincode">Pin Code</string>
-    <string name="label_phonetic_middle_name">Phonetic Middle Name</string>
-    <string name="label_phonetic_last_name">Phonetic Last Name</string>
-    <string name="label_nickname">Nickname</string>
-    <string name="label_phonetic_first_name">Phonetic First Name</string>
+    -->
+
     <string name="label_ordering">Ordering</string>
-    <string name="label_settings">Settings</string>
     <string name="label_order_firstname_first">First Name First</string>
     <string name="label_order_lastname_first">Last Name First</string>
     <string name="label_order_desc">Descending</string>
     <string name="label_order_asc">Ascending</string>
+    <string name="label_settings">Settings</string>
+
+    <string name="label_set_default">Set as default</string>
+    <string name="label_share">Share</string>
+    <string name="label_edit">Edit</string>
+    <string name="label_delete">Delete</string>
+
+    <string name="label_edit_contact">Edit Contact</string>
+    <string name="label_create_contact">New Contact</string>
+    <!--<string name="label_display_name">Name</string>-->
+    <string name="label_custom">Custom</string>
+    <string name="label_label">Label</string>
+    <string name="label_prefix">Prefix</string>
+    <string name="label_first_name">First Name</string>
+    <string name="label_middle_name">Middle Name</string>
+    <string name="label_last_name">Surname</string>
+    <string name="label_suffix">Suffix</string>
+    <string name="label_phonetic_first_name">Phonetic First Name</string>
+    <string name="label_phonetic_middle_name">Phonetic Middle Name</string>
+    <string name="label_phonetic_last_name">Phonetic Surname</string>
+    <string name="label_nickname">Nickname</string>
+    <string name="label_mobile">Phone Number</string>
+    <string name="label_email">Email</string>
+    <string name="label_event">Event</string>
+    <string name="label_event_state_date">Start Date</string>
+    <string name="label_include_year">Include Year</string>
+    <string name="label_relation">Relative</string>
+    <string name="label_address">Address</string>
+    <string name="label_organization">Organization</string>
     <string name="label_company">Company</string>
     <string name="label_organization_title">Title</string>
     <string name="label_organization_department">Department</string>
-    <string name="label_set_default">Set as default</string>
-    <string name="label_copy">Copy</string>
+    <string name="label_website">Website</string>
+    <string name="label_note">Note</string>
+    <string name="label_view_more">View More</string>
+    <string name="label_phonetic_name">Phonetic Name</string>
+    <string name="label_choose_contact_source">Edit Contact From</string>
+    <string name="label_link_unlink_contact">Link/Unlink Contact</string>
+    <string name="label_manage_source">Manage Accounts</string>
+
 </resources>

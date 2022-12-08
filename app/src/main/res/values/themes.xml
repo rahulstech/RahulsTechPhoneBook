@@ -30,6 +30,10 @@
 
     </style>
 
+    <style name="Theme.RahulsTechPhoneBook.AlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+
+    </style>
+
     <style name="Theme.RahulsTechPhoneBook.TextView">
         <item name="android:textAlignment">viewStart</item>
     </style>

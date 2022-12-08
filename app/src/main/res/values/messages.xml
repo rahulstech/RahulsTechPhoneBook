@@ -16,5 +16,7 @@
     </plurals>
 
     <string name="message_error">something error occurred</string>
+    <string name="message_empty_input_delete_contact">All fields are empty. Will you delete the contact?</string>
+    <string name="message_error_contact_edit">Can not open contact edit screen</string>
 
 </resources>

@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/manage_source"
+        android:title="@string/label_manage_source"
+        android:icon="@drawable/ic_baseline_manage_accounts"
+        app:showAsAction="always"/>
+
     <item android:id="@+id/ordering"
         android:title="@string/label_ordering"
         android:icon="@drawable/ic_baseline_sort"

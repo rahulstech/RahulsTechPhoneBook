@@ -101,19 +101,13 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
                         setInputText(data.getAddress());
                     }
 
-                    @Override
-                    public long getDataIdFromData(@NonNull Email data) {
-                        return data.getId();
-                    }
-
                     @Nullable
                     @Override
                     public Email extractData() {
                         String address = getInputText().toString();
                         ContactDataTypeAdapter.ContactDataType type = getSelectedType();
-                        if (0==getDataId() && Check.isEmptyString(address)) return null;
+                        if (Check.isEmptyString(address)) return null;
                         Email email = new Email();
-                        email.setId(getDataId());
                         email.setAddress(address);
                         email.setType(type.getType());
                         email.setTypeLabel(type.getLabel());
@@ -186,16 +180,12 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
                         setInputText(data.getUrl());
                     }
 
-                    @Override
-                    public long getDataIdFromData(@NonNull Website data) {return data.getId();}
-
                     @Nullable
                     @Override
                     public Website extractData() {
                         String url = getInputText().toString();
-                        if (0==getDataId()&&Check.isEmptyString(url)) return null;
+                        if (Check.isEmptyString(url)) return null;
                         Website website = new Website();
-                        website.setId(getDataId());
                         website.setUrl(url);
                         return website;
                     }
@@ -323,7 +313,9 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             Animator animator = item.getExitAnimator();
             animator.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationStart(Animator animation) {}
+                public void onAnimationStart(Animator animation) {
+                    item.getItemView().setVisibility(View.INVISIBLE);
+                }
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -342,6 +334,7 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
         mItems.remove(item);
     }
 
+    @Nullable
     public List<D> extractAllData() {
         List<D> list = new ArrayList<>();
         int size = mItems.size();
@@ -349,6 +342,7 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             D d = mItems.get(i).extractData();
             if (null != d) list.add(d);
         }
+        if (list.isEmpty()) return null;
         return list;
     }
 
@@ -357,15 +351,12 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
 
     public static abstract class BaseItem<I> {
 
-        private static final String KEY_DATA_ID = "data_id";
-
         @NonNull
         private ViewGroup parent;
         @NonNull
         private View itemView;
 
         private I data;
-        private long dataId;
 
         protected BaseItem(@NonNull ViewGroup parent, @NonNull View itemView) {
             Check.isNonNull(parent, "null == parent");
@@ -392,16 +383,12 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             getRemoveButton().setOnClickListener(listener);
         }
 
-        public void focus() {}
-
         public void setData(@Nullable I data) {
             this.data = data;
             if (null == data) {
-                dataId = 0L;
                 onSetDefault();
             }
             else {
-                dataId = getDataIdFromData(data);
                 onSetData(data);
             }
         }
@@ -414,10 +401,6 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
         public I getData() { return data; }
 
         public boolean hasData() { return null !=  getData(); }
-
-        public abstract long getDataIdFromData(@NonNull I data);
-
-        public long getDataId() { return dataId; }
 
         @Nullable
         public abstract I extractData();
@@ -433,16 +416,10 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
         }
 
         public Parcelable onSaveInstanceState() {
-            Bundle state = new Bundle();
-            state.putLong(KEY_DATA_ID,dataId);
-            return state;
+            return Bundle.EMPTY;
         }
 
-        public void onRestoreInstanceState(Parcelable state) {
-            if (null == state) return;
-            Bundle bundle = (Bundle) state;
-            dataId = bundle.getLong(KEY_DATA_ID,0L);
-        }
+        public void onRestoreInstanceState(Parcelable state) {}
 
         protected void logDebug(String tag, String message) {
             if (DEBUG) Log.d(tag,message);
@@ -530,9 +507,10 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
                     .setView(contentView)
                     .setNegativeButton(android.R.string.cancel, (di, which) -> di.dismiss())
                     .setPositiveButton(android.R.string.ok, (di, which) -> {
-                        CharSequence label = customTypeLabelInput.getText();
+                        CharSequence label = customTypeLabelInput.getText().toString();
                         if (label.length() > 0){
                             setCustomTypeLabel(label);
+                            setSelection(typeAdapter.getPositionForType(TYPE_CUSTOM));
                         }
                         else {
                             setSelection(0);
@@ -605,9 +583,20 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             return container;
         }
 
+        @NonNull
         @Override
-        public void focus() {
-            editText.requestFocus();
+        public Animator getEnterAnimator() {
+            Animator anim = super.getEnterAnimator();
+            anim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    boolean old = editText.getShowSoftInputOnFocus();
+                    editText.setShowSoftInputOnFocus(true);
+                    editText.requestFocus();
+                    editText.setShowSoftInputOnFocus(old);
+                }
+            });
+            return anim;
         }
 
         @Override
@@ -670,11 +659,6 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
         }
 
         @Override
-        public long getDataIdFromData(@NonNull PhoneNumber data) {
-            return data.getId();
-        }
-
-        @Override
         protected void onSetData(@NonNull PhoneNumber data) {
             primary = data.isPrimary();
             setInputText(data.getNumber());
@@ -685,9 +669,8 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
         public PhoneNumber extractData() {
             String number = getInputText().toString();
             ContactDataTypeAdapter.ContactDataType type = getSelectedType();
-            if (0==getDataId() && Check.isEmptyString(number)) return null;
+            if (Check.isEmptyString(number)) return null;
             PhoneNumber data = new PhoneNumber();
-            data.setId(getDataId());
             data.setPrimary(primary);
             data.setNumber(number);
             data.setType(type.getType());
@@ -759,11 +742,6 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
         }
 
         @Override
-        public long getDataIdFromData(@NonNull Event data) {
-            return data.getId();
-        }
-
-        @Override
         public int getTypeFromData(@NonNull Event data) {
             return data.getType();
         }
@@ -802,7 +780,6 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             if (picked) {
                 ContactDataTypeAdapter.ContactDataType type = getSelectedType();
                 Event event = new Event();
-                event.setId(getDataId());
                 event.setStartDate(DateTimeUtil.toContactEventStartDate(year,month,dayOfMonth,includeYear));
                 event.setType(type.getType());
                 event.setTypeLabel(type.getLabel());
@@ -851,19 +828,13 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             setInputText(data.getDisplayName());
         }
 
-        @Override
-        public long getDataIdFromData(@NonNull Relation data) {
-            return data.getId();
-        }
-
         @Nullable
         @Override
         public Relation extractData() {
             String displayName = getInputText().toString();
             ContactDataTypeAdapter.ContactDataType type = getSelectedType();
-            if (0==getDataId()&&Check.isEmptyString(displayName)) return null;
+            if (Check.isEmptyString(displayName)) return null;
             Relation relation = new Relation();
-            relation.setId(getDataId());
             relation.setDisplayName(displayName);
             relation.setType(type.getType());
             relation.setTypeLabel(type.getLabel());
@@ -906,19 +877,13 @@ public abstract class ContactInputItemManager<D,I extends ContactInputItemManage
             super.onSetDefault();
         }
 
-        @Override
-        public long getDataIdFromData(@NonNull PostalAddress data) {
-            return data.getId();
-        }
-
         @Nullable
         @Override
         public PostalAddress extractData() {
             String address = getInputText().toString();
             ContactDataTypeAdapter.ContactDataType type = getSelectedType();
-            if (0==getDataId() && Check.isEmptyString(address)) return null;
+            if (Check.isEmptyString(address)) return null;
             PostalAddress postalAddress = new PostalAddress();
-            postalAddress.setId(getDataId());
             postalAddress.setFormattedAddress(address);
             postalAddress.setType(type.getType());
             postalAddress.setTypeLabel(type.getLabel());

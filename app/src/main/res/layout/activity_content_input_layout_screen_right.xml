@@ -60,6 +60,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:imeOptions="actionNext"
+                            android:inputType="text"
                             android:maxLines="1"
                             tools:text="@tools:sample/full_names"/>
 
@@ -78,6 +79,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
+                            android:inputType="text"
                             android:imeOptions="actionNext"
                             tools:text="@tools:sample/full_names"/>
 
@@ -104,6 +106,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
+                            android:inputType="text"
                             android:imeOptions="actionNext"
                             tools:text="@tools:sample/full_names"/>
 
@@ -122,6 +125,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
+                            android:inputType="text"
                             android:imeOptions="actionNext"
                             tools:text="@tools:sample/full_names"/>
 
@@ -140,6 +144,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
+                            android:inputType="text"
                             android:imeOptions="actionNext"
                             tools:text="@tools:sample/full_names"/>
 
@@ -158,6 +163,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="1"
+                            android:inputType="text"
                             android:imeOptions="actionNext"
                             tools:text="@tools:sample/full_names"/>
 
@@ -177,6 +183,7 @@
                             android:layout_height="wrap_content"
                             android:imeOptions="actionNext"
                             android:maxLines="1"
+                            android:inputType="text"
                             tools:text="@tools:sample/full_names"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
@@ -204,6 +211,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:maxLines="1"
+                        android:inputType="text"
                         android:imeOptions="actionNext"
                         tools:text="@tools:sample/full_names"/>
 
@@ -222,6 +230,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:maxLines="1"
+                        android:inputType="text"
                         android:imeOptions="actionNext"
                         tools:text="@tools:sample/full_names"/>
 
@@ -240,6 +249,26 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:maxLines="1"
+                        android:inputType="text"
+                        android:imeOptions="actionNext"
+                        tools:text="@tools:sample/full_names"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gap_tiny"
+                    android:layout_marginStart="@dimen/gap_small"
+                    android:layout_marginEnd="@dimen/gap_small"
+                    android:hint="@string/label_nickname">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/nickname"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:inputType="text"
                         android:imeOptions="actionNext"
                         tools:text="@tools:sample/full_names"/>
 

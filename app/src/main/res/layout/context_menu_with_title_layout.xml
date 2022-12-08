@@ -13,7 +13,7 @@
         android:maxLines="2"
         android:ellipsize="end"
         android:textStyle="bold"
-        android:textSize="@dimen/text_size_primary"
+        android:textSize="@dimen/text_size_secondary"
         android:visibility="gone"
         tools:visibility="visible"
         tools:text="This is title"/>

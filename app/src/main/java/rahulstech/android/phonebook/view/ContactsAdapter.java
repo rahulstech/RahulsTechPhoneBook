@@ -2,7 +2,6 @@ package rahulstech.android.phonebook.view;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
@@ -22,27 +21,25 @@ import me.samlss.broccoli.Broccoli;
 import me.samlss.broccoli.BroccoliGradientDrawable;
 import me.samlss.broccoli.PlaceholderParameter;
 import rahulstech.android.phonebook.R;
-import rahulstech.android.phonebook.model.ContactDisplay;
-import rahulstech.android.phonebook.model.Name;
+import rahulstech.android.phonebook.model.ContactDetails;
 import rahulstech.android.phonebook.util.Check;
 import rahulstech.android.phonebook.util.ContactSorting;
 
-import static rahulstech.android.phonebook.util.DrawableUtil.getMinimumDimension;
-import static rahulstech.android.phonebook.util.DrawableUtil.roundedTextDrawable;
 import static rahulstech.android.phonebook.util.DrawableUtil.vectorDrawable;
-import static rahulstech.android.phonebook.util.Helpers.firstNonEmptyString;
-import static rahulstech.android.phonebook.util.Helpers.getDisplayLabel;
+import static rahulstech.android.phonebook.util.Helpers.createContactPhotoPlaceholder;
 
-public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, ClickableItemAdapter.ClickableItemViewHolder<ContactDisplay>> implements ContactFilter.PublishResultCallback {
+public class ContactsAdapter extends ClickableItemAdapter<ContactDetails, ClickableItemAdapter.ClickableItemViewHolder<ContactDetails>> implements ContactFilter.PublishResultCallback {
 
-    private static final String TAG = "ContactListAdapter";
+    // TODO: highlight matched phrase
 
-    private static final List<ContactDisplay> LOADING_ITEMS = new AbstractList<ContactDisplay>() {
+    private static final String TAG = "ContactsAdapter";
 
-        final int COUNT = 20;
+    private static final List<ContactDetails> LOADING_ITEMS = new AbstractList<ContactDetails>() {
+
+        private static final int COUNT = 20;
 
         @Override
-        public ContactDisplay get(int index) {
+        public ContactDetails get(int index) {
             if (index < 0 || index >= COUNT) throw new IndexOutOfBoundsException("valid range 0-"+(COUNT -1));
             return null;
         }
@@ -56,36 +53,29 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
     public static final int ITEM_BLANK = 0;
     public static final int ITEM_CONTACT = 1;
 
-    public static final ContactDisplay BLANK_CONTACT = new ContactDisplay(null);
-    /*static {
-        Contact contact = new Contact(0,null,"",null,false);
-        Name name = new Name(null,0,"","","",
-                null,null,null,null,null,null);
-        BLANK_CONTACT = new ContactDisplay(contact);
-        BLANK_CONTACT.setName(name);
-    }*/
+    public static final ContactDetails BLANK_CONTACT = new ContactDetails(null);
 
     private ContactFilter filter;
     private ContactSorting oldSorting = null,newSorting = null;
-    private AsyncListDiffer<ContactDisplay> mDiffer;
+    private AsyncListDiffer<ContactDetails> mDiffer;
 
     private boolean showingItemLoading = true;
 
-    private DiffUtil.ItemCallback<ContactDisplay> mDiffItemCallback = new DiffUtil.ItemCallback<ContactDisplay>() {
+    private DiffUtil.ItemCallback<ContactDetails> mDiffItemCallback = new DiffUtil.ItemCallback<ContactDetails>() {
         @Override
-        public boolean areItemsTheSame(@NonNull ContactDisplay oldItem, @NonNull ContactDisplay newItem) {
+        public boolean areItemsTheSame(@NonNull ContactDetails oldItem, @NonNull ContactDetails newItem) {
             long oldId = BLANK_CONTACT == oldItem ? 0 : oldItem.getContactId();
             long newId = BLANK_CONTACT == newItem ? 0 : newItem.getContactId();
             return oldId == newId;
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull ContactDisplay oldItem, @NonNull ContactDisplay newItem) {
+        public boolean areContentsTheSame(@NonNull ContactDetails oldItem, @NonNull ContactDetails newItem) {
             return oldSorting != newSorting || oldItem.equals(newItem);
         }
     };
 
-    public ContactListAdapter(@NonNull Context context) {
+    public ContactsAdapter(@NonNull Context context) {
         super(context);
         filter = new ContactFilter(this);
         mDiffer = new AsyncListDiffer<>(this, mDiffItemCallback);
@@ -107,17 +97,17 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
         showingItemLoading = true;
     }
 
-    public void changeItems(@NonNull ContactSorting sorting, @Nullable List<ContactDisplay> newItems) {
+    public void changeItems(@NonNull ContactSorting sorting, @Nullable List<ContactDetails> newItems) {
         setSorting(sorting);
         if (null == newItems || newItems.isEmpty()) {
             mDiffer.submitList(null);
         }
         else {
-            mDiffer.submitList(new AbstractList<ContactDisplay>() {
-                final List<ContactDisplay> items = newItems;
+            mDiffer.submitList(new AbstractList<ContactDetails>() {
+                final List<ContactDetails> items = newItems;
 
                 @Override
-                public ContactDisplay get(int index) {
+                public ContactDetails get(int index) {
                     if (index == items.size()) return BLANK_CONTACT;
                     return items.get(index);
                 }
@@ -131,7 +121,7 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
         showingItemLoading = false;
     }
 
-    public List<ContactDisplay> getItems() {
+    public List<ContactDetails> getItems() {
         return mDiffer.getCurrentList();
     }
 
@@ -141,44 +131,44 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
     }
 
     @Override
-    public ContactDisplay getItem(int position) {
+    public ContactDetails getItem(int position) {
         return getItems().get(position);
     }
 
     @Override
     public int getItemViewType(int position) {
         if (showingItemLoading) return ITEM_CONTACT;
-        ContactDisplay item = getItem(position);
+        ContactDetails item = getItem(position);
         if (item == BLANK_CONTACT) return ITEM_BLANK;
         return ITEM_CONTACT;
     }
 
     @NonNull
     @Override
-    public ClickableItemViewHolder<ContactDisplay> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ClickableItemViewHolder<ContactDetails> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (ITEM_CONTACT == viewType) {
             return new ContactListItemViewHolder(this,
                     getLayoutInflater().inflate(R.layout.contact_list_item_contact, parent, false));
         }
         else {
-            return new ClickableItemViewHolder<ContactDisplay>(this,
+            return new ClickableItemViewHolder<ContactDetails>(this,
                     getLayoutInflater().inflate(R.layout.blank,parent,false)) {
                 @Override
-                public void bind(@Nullable ContactDisplay item) {}
+                public void bind(@Nullable ContactDetails item) {}
             };
         }
     }
 
     @Override
-    public void publish(@Nullable CharSequence constraint, @Nullable List<ContactDisplay> filtered) {
-        changeItems(getSorting(),filtered);
+    public void publish(@NonNull ContactFilter.Result result) {
+        changeItems(getSorting(),result.contacts);
     }
 
     public ContactFilter getFilter() {
         return filter;
     }
 
-    public static class ContactListItemViewHolder extends ClickableItemAdapter.ClickableItemViewHolder<ContactDisplay> {
+    public static class ContactListItemViewHolder extends ClickableItemAdapter.ClickableItemViewHolder<ContactDetails> {
 
         private static final int PLACEHOLDER_ANIMATION_DURATION = 700;
 
@@ -187,7 +177,7 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
         private View btnVoiceCall, btnSms;
         private Broccoli broccoli;
 
-        public ContactListItemViewHolder(ContactListAdapter adapter, @NonNull View v) {
+        public ContactListItemViewHolder(ContactsAdapter adapter, @NonNull View v) {
             super( adapter,v);
             contactName = v.findViewById(R.id.contact_name);
             thumbnail = v.findViewById(R.id.contact_thumbnail);
@@ -208,16 +198,21 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
             btnSms.setOnClickListener(null);
         }
 
+        private ContactSorting getSorting() {
+            return ((ContactsAdapter) getAdapter()).getSorting();
+        }
+
         @Override
-        public void bind(@Nullable ContactDisplay item) {
+        public void bind(@Nullable ContactDetails item) {
             broccoli.removeAllPlaceholders();
             if (null != item) {
-                ContactSorting sorting = ((ContactListAdapter) getAdapter()).newSorting;
-                String displayName = item.getDisplayName(sorting.isDisplayFirstNameFirst());
+                ContactSorting sorting = getSorting();
+                String displayName = item.getDisplayName(sorting);
                 contactName.setText(displayName);
                 Glide.with(thumbnail)
-                        .load(item.getThumbnailUri())
-                        .placeholder(getContactPlaceholder(getLabel()))
+                        .load(item.getPhotoUri())
+                        .placeholder(createContactPhotoPlaceholder(item,sorting,thumbnail,
+                                vectorDrawable(itemView.getContext(),R.drawable.placeholder_contact_photo)))
                         .into(thumbnail);
                 attachClickListener();
             }
@@ -237,21 +232,6 @@ public class ContactListAdapter extends ClickableItemAdapter<ContactDisplay, Cli
                     .setDrawable(new BroccoliGradientDrawable(Color.parseColor("#DDDDDD"),
                             Color.parseColor("#CCCCCC"), 0, PLACEHOLDER_ANIMATION_DURATION, new LinearInterpolator()))
                     .build();
-        }
-
-        @Nullable
-        private String getLabel() {
-            ContactListAdapter adapter = (ContactListAdapter) getAdapter();
-            ContactSorting sorting = adapter.getSorting();
-            ContactDisplay display = adapter.getItem(getAdapterPosition());
-            Name name = display.getName();
-            String displayName = display.getDisplayName(sorting.isDisplayFirstNameFirst());
-            return getDisplayLabel(sorting,name,displayName);
-        }
-
-        private Drawable getContactPlaceholder(@Nullable String label) {
-            return roundedTextDrawable(label,0,1, getMinimumDimension(thumbnail)/2,
-                    vectorDrawable(itemView.getContext(),R.drawable.placeholder_contact_photo));
         }
     }
 }

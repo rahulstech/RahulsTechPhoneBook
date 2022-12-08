@@ -7,8 +7,17 @@
         android:icon="@drawable/ic_baseline_edit"
         app:showAsAction="always"/>
 
+    <item android:id="@+id/share"
+        android:title="@string/label_share"
+        android:icon="@drawable/ic_baseline_share"
+        app:showAsAction="ifRoom"/>
+
     <item android:id="@+id/delete"
         android:title="@string/label_delete"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/link_unlink"
+        android:title="@string/label_link_unlink_contact"
         app:showAsAction="never"/>
 
 </menu>

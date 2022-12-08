@@ -12,8 +12,8 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -21,136 +21,40 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import rahulstech.android.phonebook.concurrent.AsyncTask;
-import rahulstech.android.phonebook.model.ContactAccount;
-import rahulstech.android.phonebook.model.ContactDisplay;
-import rahulstech.android.phonebook.model.Name;
+import rahulstech.android.phonebook.model.ContactDetails;
 import rahulstech.android.phonebook.model.PhoneNumber;
-import rahulstech.android.phonebook.util.Check;
+import rahulstech.android.phonebook.model.RawContact;
+import rahulstech.android.phonebook.util.ContactDetailsComparator;
 import rahulstech.android.phonebook.util.ContactSorting;
-import rahulstech.android.phonebook.util.Helpers;
 import rahulstech.android.phonebook.util.OpenActivity;
 import rahulstech.android.phonebook.util.Settings;
 import rahulstech.android.phonebook.view.ContactFilter;
-import rahulstech.android.phonebook.view.ContactListAdapter;
+import rahulstech.android.phonebook.view.ContactSourceAdapter;
+import rahulstech.android.phonebook.view.ContactsAdapter;
 import rahulstech.android.phonebook.view.OnListItemClickListener;
 import rahulstech.android.phonebook.viewmodel.ContactViewModel;
-
-import static rahulstech.android.phonebook.util.Helpers.areAllNonEmpty;
-import static rahulstech.android.phonebook.util.Helpers.firstNonEmptyString;
 
 public class ContactsListActivity extends PhoneBookActivity implements OnListItemClickListener {
     // TODO: contact list scrolling not smooth
     // TODO: search contact not properly implemented
     // TODO: contact placeholder image changes on scroll
-    //  and contact loading view showing orientation change unnecessarily
-    // TODO: floating action button hiding content
     // TODO: appbar improvement required
+    // TODO: contact source changed not properly handled
+    // TODO: current selected source must be shown
+    // TODO: implement alphabet indexer
 
     private static final String TAG = "ContactsListActivity";
 
-    public static class ContactDisplayComparator implements Comparator<ContactDisplay> {
-
-        public final ContactSorting sorting;
-
-        public ContactDisplayComparator(ContactSorting sorting) {
-            this.sorting = sorting;
-        }
-
-        boolean isFirstNameFirst() {
-            return sorting == ContactSorting.FIRSTNAME_FIRST || sorting == ContactSorting.FIRSTNAME_FIRST_DESC;
-        }
-
-        private String getFirstName(@NonNull Name name) {
-            String firstName = name.getGivenName();
-            if (Check.isEmptyString(firstName)) return name.getFamilyName();
-            return firstName;
-        }
-
-        private String getLastName(@NonNull Name name) {
-            String lastName = name.getFamilyName();
-            if (Check.isEmptyString(lastName)) return name.getGivenName();
-            return lastName;
-        }
-
-        @Override
-        public int compare(ContactDisplay o1, ContactDisplay o2) {
-            Name n1 = o1.getName();
-            Name n2 = o2.getName();
-            /*if (null == n1 || null == n2) return 1;
-            String left,right;
-            if (ContactSorting.FIRSTNAME_FIRST == sorting) {
-                left = getFirstName(n1);
-                right = getFirstName(n2);
-            }
-            else if (ContactSorting.LASTNAME_FIRST == sorting) {
-                left = getLastName(n1);
-                right = getLastName(n2);
-            }
-            else if (ContactSorting.FIRSTNAME_FIRST_DESC == sorting) {
-                right = getFirstName(n1);
-                left = getFirstName(n2);
-            }
-            else {
-                right = getLastName(n1);
-                left = getLastName(n2);
-            }
-            if (Check.isEmptyString(left) && Check.isEmptyString(right)) return 0;
-            if (Check.isEmptyString(left)) return 1;
-            if (Check.isEmptyString(right)) return -1;
-            return left.compareToIgnoreCase(right);*/
-
-            String name1 = getComparablePart(n1);
-            String name2 = getComparablePart(n2);
-
-            if (Check.isEmptyString(name1) && Check.isEmptyString(name2)) return 0;
-            if (Check.isEmptyString(name1)) return 1;
-            if (Check.isEmptyString(name2)) return -1;
-
-            return name1.compareToIgnoreCase(name2);
-
-
-            /*if (null == o1 && null == o2) return 0;
-            if (null == o1) return 1;
-            if (null == o2) return -1;
-
-            boolean primary = isFirstNameFirst();
-            String name1 = o1.getContact().getDisplayName(primary);
-            String name2 = o2.getContact().getDisplayName(primary);
-
-            return name1.compareToIgnoreCase(name2);*/
-        }
-
-        String getComparablePart(@Nullable Name n) {
-            boolean firstNameFirst = isFirstNameFirst();
-            String firstName = n.getGivenName();
-            String lastName = n.getFamilyName();
-            String middleName = n.getMiddleName();
-            String suffix = n.getSuffix();
-            String prefix = n.getPrefix();
-            String comparable;
-            if (firstNameFirst) {
-                comparable = firstNonEmptyString(firstName,lastName,middleName,suffix,prefix);
-            }
-            else {
-                comparable = firstNonEmptyString(lastName,firstName,middleName,suffix,prefix);
-            }
-            return comparable;
-        }
-    }
-
-    Toolbar toolbar;
-    SearchView contactSearch;
-    RecyclerView contactList;
-    FloatingActionButton btnAddContact;
-    ContactListAdapter adapter;
-
+    private Toolbar toolbar;
+    private SearchView contactSearch;
+    private RecyclerView contactList;
+    private FloatingActionButton btnAddContact;
+    private ContactsAdapter adapter;
+    private ContactSourceAdapter contactSourceAdapter;
     private ContactViewModel vm;
-
     private Settings settings;
 
     @Override
@@ -165,13 +69,14 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
         contactSearch = findViewById(R.id.search_contacts);
         contactList = findViewById(R.id.contact_list);
         btnAddContact = findViewById(R.id.button_add_contact);
+
         btnAddContact.setOnClickListener(v -> onAddNewContact());
-        adapter = new ContactListAdapter(this);
+        contactSourceAdapter = new ContactSourceAdapter(this);
+        adapter = new ContactsAdapter(this);
         adapter.setSorting(getContactSorting());
         adapter.setOnListItemClickListener(this);
         contactList.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         contactList.setAdapter(adapter);
-
         setSupportActionBar(toolbar);
         contactSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -199,9 +104,9 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
     @Override
     protected void onResume() {
         super.onResume();
-        List<ContactDisplay> contacts = vm.getContactDisplayList();
+        List<ContactDetails> contacts = vm.getContacts();
         if (null == contacts) adapter.showLoading();
-        else adapter.changeItems(settings.getContactSorting(),contacts);
+        else adapter.changeItems(getContactSorting(),contacts);
     }
 
     @Override
@@ -217,6 +122,9 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
             onChooseContactOrdering();
             return true;
         }
+        else if (id == R.id.manage_source) {
+            onShowContactSources();
+        }
         else if (id == R.id.settings) {
             // TODO: implement settings screen
             return true;
@@ -227,26 +135,30 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
     @Override
     public void onAllPermissionsGranted(int requestCode) {
         super.onAllPermissionsGranted(requestCode);
-        if (CONTACT_PERMISSION_CODE == requestCode) loadContacts();
+        if (CONTACT_PERMISSION_CODE == requestCode) {
+            loadAllContactSources();
+            loadContacts();
+        }
         else if (CALL_PERMISSION_CODE == requestCode) {
             if (vm.hasAnyHaltedTask()) {
                 vm.getHaltedTask().run();
                 vm.removeHaltedTask();
             }
         }
-
     }
 
     @Override
     public void onClickListItem(RecyclerView.Adapter<?> a, View which, int position, int itemType) {
-        ContactDisplay item = adapter.getItem(position);
+        ContactDetails item = adapter.getItem(position);
         if (null == item) return;
         int vid = which.getId();
+        PhoneNumber primary = item.getPhoneNumberPrimary();
+        List<PhoneNumber> all = item.getPhoneNumbers();
         if (R.id.action_voice_call == vid) {
-            makeVoiceCall(item);
+            makeVoiceCall(primary,all);
         }
         else if (R.id.action_sms == vid) {
-            sendSms(item);
+            sendSms(primary,all);
         }
         else {
             OpenActivity.viewContactDetails(this,item.getContentUri());
@@ -257,8 +169,43 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
         OpenActivity.addContact(this);
     }
 
+    private int getContactSourceSelection() {
+        String name = settings.getDisplayContactSourceName();
+        String type = settings.getDisplayContactSourceType();
+        int position = contactSourceAdapter.getPositionByTypeAndName(type,name);
+        return position;
+    }
+
+    private void onShowContactSources() {
+        int position = getContactSourceSelection();
+        new AlertDialog.Builder(this)
+                .setSingleChoiceItems(contactSourceAdapter,position,(dialog,which)->{
+                    RawContact source = contactSourceAdapter.getItem(which);
+                    onChangeContactSource(source);
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private void onChangeContactSource(@NonNull RawContact source) {
+        settings.setDisplayContactSource(source.getName(), source.getType()).save();
+    }
+
+    private void onContactSourcesLoaded(@Nullable List<RawContact> sources) {
+        ArrayList<RawContact> modified = new ArrayList<>();
+        modified.add(RawContact.ALL_SOURCE);
+        if (null != sources) modified.addAll(sources);
+        contactSourceAdapter.setSources(modified);
+    }
+
     private void loadContacts() {
-        AsyncTask.execute(()->vm.getRepository().loadContactDisplay(getSelectedContactAccount(),getContactSorting()), new AsyncTask.AsyncTaskCallback(){
+        AsyncTask.execute(()->{
+            List<ContactDetails> contacts = vm.getRepository().getAllContacts();
+            ContactSorting sorting = getContactSorting();
+            ContactDetailsComparator comparator = new ContactDetailsComparator(sorting);
+            Collections.sort(contacts,comparator);
+            return contacts;
+        }, new AsyncTask.AsyncTaskCallback(){
             @Override
             public void onError(AsyncTask task) {
                 onContactsLoaded(Collections.emptyList());
@@ -272,16 +219,26 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
         });
     }
 
-    private ContactAccount getSelectedContactAccount() {
-        return ContactAccount.ALL;
+    private void loadAllContactSources() {
+        AsyncTask.execute(()->vm.getRepository().getAllContactSources(),new AsyncTask.AsyncTaskCallback(){
+            @Override
+            public void onError(AsyncTask task) {
+                Log.e(TAG,"",task.getError());
+            }
+
+            @Override
+            public void onResult(AsyncTask task) {
+                onContactSourcesLoaded(task.getResult());
+            }
+        });
     }
 
     private ContactSorting getContactSorting() {
         return settings.getContactSorting();
     }
 
-    private void onContactsLoaded(List<ContactDisplay> contacts) {
-        vm.setContactDisplayList(contacts);
+    private void onContactsLoaded(List<ContactDetails> contacts) {
+        vm.setContacts(contacts);
         adapter.changeItems(getContactSorting(),contacts);
     }
 
@@ -294,7 +251,7 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
     }
 
     private void onSearchContact(String newText) {
-        adapter.getFilter().filter(newText,vm.getContactDisplayList(), ContactFilter.FilterType.NAME);
+        adapter.getFilter().filter(newText,vm.getContacts(),ContactFilter.FilterType.NAME);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,7 +264,7 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
 
     private void onChooseContactOrdering() {
         if (null == orderingChooser) {
-            orderingChooserView = getLayoutInflater().inflate(R.layout.contact_sorting_chooser_dialog_layout, null, false);
+            orderingChooserView = getLayoutInflater().inflate(R.layout.contact_sorting_chooser_dialog_layout,null, false);
             ordering1 = orderingChooserView.findViewById(R.id.ordering1);
             ordering2 = orderingChooserView.findViewById(R.id.ordering2);
 
@@ -389,21 +346,21 @@ public class ContactsListActivity extends PhoneBookActivity implements OnListIte
                 .show();
     }
 
-    private void makeVoiceCall(final ContactDisplay display) {
-        if (display.hasPhoneNumberPrimary()) {
-            makeVoiceCall(display.getPhoneNumberPrimary().getNumber());
+    private void makeVoiceCall(final PhoneNumber primary, final List<PhoneNumber> all) {
+        if (null != primary) {
+            makeVoiceCall(primary.getNumber());
         }
         else {
-            onChoosePhoneNumber(getString(R.string.label_choose_voice_call_number),display.getPhoneNumbers(),ACTION_VOICE_CALL);
+            onChoosePhoneNumber(getString(R.string.label_choose_voice_call_number),all,ACTION_VOICE_CALL);
         }
     }
 
-    private void sendSms(ContactDisplay display) {
-        if (display.hasPhoneNumberPrimary()) {
-            OpenActivity.sendSms(this,display.getPhoneNumberPrimary().getNumber());
+    private void sendSms(final PhoneNumber primary, final List<PhoneNumber> all) {
+        if (null != primary) {
+            OpenActivity.sendSms(this,primary.getNumber());
         }
         else {
-            onChoosePhoneNumber(getString(R.string.label_choose_sms_number),display.getPhoneNumbers(),ACTION_SEND_SMS);
+            onChoosePhoneNumber(getString(R.string.label_choose_sms_number),all,ACTION_SEND_SMS);
         }
     }
 

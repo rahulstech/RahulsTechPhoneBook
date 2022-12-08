@@ -2,7 +2,6 @@ buildscript {
     repositories {
         google()
         jcenter()
-
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.1.2'
@@ -16,10 +15,13 @@ allprojects {
     repositories {
         google()
         jcenter()
+        // TODO: uncomment below
+        /*maven { url "https://maven.google.com" }
         maven {
             url 'http://dl.bintray.com/amulyakhare/maven'
             allowInsecureProtocol true
-        }
+        }*/
+        maven {url 'https://jitpack.io'}
     }
 }
 

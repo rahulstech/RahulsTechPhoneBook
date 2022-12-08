@@ -1,11 +1,22 @@
 package rahulstech.android.phonebook.model;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.provider.ContactsContract;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.util.Check;
+import rahulstech.android.phonebook.util.ContactSorting;
+import rahulstech.android.phonebook.util.DrawableUtil;
+import rahulstech.android.phonebook.util.Helpers;
+
+import static rahulstech.android.phonebook.util.Check.isAlphaString;
+import static rahulstech.android.phonebook.util.Check.isEmptyString;
+import static rahulstech.android.phonebook.util.Helpers.createContactPhotoPlaceholder;
+import static rahulstech.android.phonebook.util.Helpers.firstNonEmptyString;
 
 public class ContactDetails {
 
@@ -13,7 +24,33 @@ public class ContactDetails {
 
     private Contact contact;
 
+    private long mainRawContactId;
+
+    private List<RawContact> linkedRawContacts;
+
+    @Nullable
+    private String displayNameFirstNameFirst = null;
+
+    @Nullable
+    private String displayNameLastNameFirst = null;
+
+    @Nullable
+    private String sortKeyFirstNameFirst = null;
+
+    @Nullable
+    private String sortKeyLastNameFirst = null;
+
+    @Nullable
+    private String displayLabelFirstNameFirst = null;
+
+    @Nullable
+    private String displayLabelLastNameFirst = null;
+
+    @Nullable
     private Name name;
+
+    @Nullable
+    private PhoneNumber phoneNumberPrimary;
 
     @Nullable
     private List<PhoneNumber> phoneNumbers;
@@ -57,24 +94,101 @@ public class ContactDetails {
         return rawContact;
     }
 
-    public RawContact getAccount() {
-        return rawContact;
+    public List<RawContact> getLinkedRawContacts() {
+        return linkedRawContacts;
+    }
+
+    public void setLinkedRawContacts(List<RawContact> linkedRawContacts) {
+        this.linkedRawContacts = linkedRawContacts;
     }
 
     public Contact getContact() {
         return contact;
     }
 
+    public long getContactId() { return null == contact ? 0 : contact.getId(); }
+
+    @Nullable
     public Name getName() {
         return name;
     }
 
-    public void setName(Name name) {
+    public void setName(@Nullable Name name) {
         this.name = name;
     }
 
-    public String getDisplayName() {
-        return null == name ? Name.UNKNOWN_NAME.getDisplayName() : name.getDisplayName();
+    public void buildNameDependentValues() {
+        if (null != name) {
+            displayNameFirstNameFirst = name.buildDisplayName(ContactSorting.FIRSTNAME_FIRST);
+            displayNameLastNameFirst = name.buildDisplayName(ContactSorting.LASTNAME_FIRST);
+            sortKeyFirstNameFirst = buildSortKey(name,ContactSorting.FIRSTNAME_FIRST);
+            sortKeyLastNameFirst = buildSortKey(name,ContactSorting.LASTNAME_FIRST);
+            displayLabelFirstNameFirst = buildDisplayLabel(name,ContactSorting.FIRSTNAME_FIRST);
+            displayLabelLastNameFirst = buildDisplayLabel(name,ContactSorting.LASTNAME_FIRST);
+        }
+    }
+
+    static String buildSortKey(@Nullable Name name, ContactSorting sorting) {
+        if (null == name) return null;
+        String sortKey;
+        if (sorting.isDisplayFirstNameFirst()) {
+            sortKey = firstNonEmptyString(name.getGivenName(),name.getFamilyName(),
+                    name.getMiddleName(),name.getSuffix(),name.getPrefix());
+        }
+        else {
+            sortKey = firstNonEmptyString(name.getFamilyName(),name.getGivenName(),
+                    name.getMiddleName(),name.getSuffix(),name.getPrefix());
+        }
+        if (isEmptyString(sortKey)) return null;
+        if (!isAlphaString(sortKey.substring(0,1))) return null;
+        return sortKey;
+    }
+
+    static String buildDisplayLabel(@Nullable Name name, ContactSorting sorting) {
+        if (null == name) return null;
+        String displayName = name.buildDisplayName(sorting);
+        if (isEmptyString(displayName)) return null;
+        String label = displayName.substring(0,1);
+        if (!isAlphaString(label)) return null;
+        label = label.toUpperCase();
+        return label;
+    }
+
+    /**
+     * Returns names to be display. The returned value must be used for display
+     * purpose only not any kind of computation purpose like sorting or creating
+     * display label.
+     * @return contact display name
+     * @see Name#getDisplayName()
+     * @see Name#UNKNOWN_NAME
+     */
+    @NonNull
+    public String getDisplayName(@NonNull ContactSorting sorting) {
+        final String displayName = sorting.isDisplayFirstNameFirst() ? displayNameFirstNameFirst : displayNameLastNameFirst;
+        return isEmptyString(displayName) ? Name.UNKNOWN_NAME.getDisplayName() : displayName;
+    }
+
+    /**
+     * Returns the string to use sorting contacts. Depending upon the
+     * sorting it decides the best suitable sorting key.
+     * It may return null if no alternative found.
+     *
+     * @param sorting the {@link ContactSorting} to decide the key
+     * @return
+     */
+    @Nullable
+    public String getSortingKey(@NonNull ContactSorting sorting) {
+        return sorting.isDisplayFirstNameFirst() ? sortKeyFirstNameFirst : sortKeyLastNameFirst;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Nullable
+    public String getDisplayLabel(@NonNull ContactSorting sorting) {
+        final String label = sorting.isDisplayFirstNameFirst() ? displayLabelFirstNameFirst : displayLabelLastNameFirst;
+        return label;
     }
 
     public Uri getPhotoUri() {
@@ -86,7 +200,22 @@ public class ContactDetails {
         return phoneNumbers;
     }
 
-    public void setPhoneNumbers(List<PhoneNumber> phoneNumbers) {
+    public boolean hasPhoneNumberPrimary() {
+        return null!=phoneNumberPrimary || (null!=phoneNumbers && 1==phoneNumbers.size());
+    }
+
+    @Nullable
+    public PhoneNumber getPhoneNumberPrimary() {
+        if (null != phoneNumberPrimary) return phoneNumberPrimary;
+        if (hasPhoneNumberPrimary()) return phoneNumbers.get(0);
+        return null;
+    }
+
+    public void setPhoneNumberPrimary(@Nullable PhoneNumber number) {
+        this.phoneNumberPrimary = number;
+    }
+
+    public void setPhoneNumbers(@Nullable List<PhoneNumber> phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
     }
 
@@ -95,7 +224,7 @@ public class ContactDetails {
         return emails;
     }
 
-    public void setEmails(List<Email> emails) {
+    public void setEmails(@Nullable List<Email> emails) {
         this.emails = emails;
     }
 
@@ -154,7 +283,8 @@ public class ContactDetails {
     }
 
     public Uri getContentUri() {
-        return contact.getContentUri();
+        return ContactsContract.Contacts.CONTENT_URI.buildUpon()
+                .appendPath(String.valueOf(getContactId())).build();
     }
 
     @Override

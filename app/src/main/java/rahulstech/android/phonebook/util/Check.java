@@ -20,6 +20,10 @@ public class  Check {
         return null == text || "".equals(text);
     }
 
+    public static boolean isAlphaString(String text) {
+        if (null == text || "".equals(text)) return false;
+        return text.matches("^[a-zA-Z]*$");
+    }
     public static void isNonEmptyString(String text, String message) {
         isTrue(!isEmptyString(text),message);
     }

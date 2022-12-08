@@ -1,40 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ContactDetailsActivity">
-
     <include layout="@layout/contact_details_action_bar"/>
-
-    <FrameLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize">
+        android:layout_marginTop="?attr/actionBarSize"
+        android:background="@drawable/shape_rounded_top_corners">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:orientation="vertical"
+            android:gravity="center">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
+            <include layout="@layout/activity_contact_details_layout_screen_left"/>
 
-                <include layout="@layout/activity_contact_details_layout_screen_left"/>
+            <include layout="@layout/activity_contact_details_layout_screen_right" />
 
-                <include layout="@layout/activity_contact_details_layout_screen_right" />
-
-            </LinearLayout>
-        </ScrollView>
-
-
-    </FrameLayout>
-
-
-
-
+        </LinearLayout>
+    </ScrollView>
 </FrameLayout>

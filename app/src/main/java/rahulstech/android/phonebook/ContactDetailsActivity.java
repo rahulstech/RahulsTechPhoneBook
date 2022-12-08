@@ -1,7 +1,6 @@
 package rahulstech.android.phonebook;
 
 import android.content.res.ColorStateList;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,13 +29,13 @@ import rahulstech.android.phonebook.concurrent.AsyncTask;
 import rahulstech.android.phonebook.model.ContactDetails;
 import rahulstech.android.phonebook.model.Email;
 import rahulstech.android.phonebook.model.Event;
+import rahulstech.android.phonebook.model.Name;
 import rahulstech.android.phonebook.model.Note;
 import rahulstech.android.phonebook.model.Organization;
 import rahulstech.android.phonebook.model.PhoneNumber;
 import rahulstech.android.phonebook.model.PostalAddress;
 import rahulstech.android.phonebook.model.Relation;
 import rahulstech.android.phonebook.model.Website;
-import rahulstech.android.phonebook.util.Check;
 import rahulstech.android.phonebook.util.ContactSorting;
 import rahulstech.android.phonebook.util.DateTimeUtil;
 import rahulstech.android.phonebook.util.DrawableUtil;
@@ -45,6 +44,7 @@ import rahulstech.android.phonebook.util.Settings;
 import rahulstech.android.phonebook.view.ListPopups;
 import rahulstech.android.phonebook.viewmodel.ContactViewModel;
 
+import static rahulstech.android.phonebook.util.Check.isEmptyString;
 import static rahulstech.android.phonebook.util.DrawableUtil.vectorDrawable;
 import static rahulstech.android.phonebook.util.Helpers.createContactPhotoPlaceholder;
 
@@ -68,8 +68,6 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
     private ContactViewModel vm;
 
-    private ContactDetails details = null;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,20 +86,14 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         contactStar.setOnClickListener(v-> onClickStar());
         contactName = findViewById(R.id.display_name);
 
+        initSectionName();
         initSectionPhoneNumber();
-
         initSectionEmail();
-
         initSectionEvents();
-
         initSectionRelatives();
-
         initSectionAddress();
-
         initSectionOrganization();
-
         initSectionWebsite();
-
         initSectionNote();
     }
 
@@ -118,12 +110,15 @@ public class ContactDetailsActivity extends PhoneBookActivity {
             super.onBackPressed();
         }
         else if (id == R.id.delete) {
-            onDeleteContact();
+            onDeleteContact(vm.getContactDetails());
             return true;
         }
         else if (id == R.id.edit) {
-            onEditContact();
+            onEditContact(vm.getContactDetails());
             return true;
+        }
+        else if (id == R.id.share) {
+            onShareContact(vm.getContactDetails());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -144,14 +139,15 @@ public class ContactDetailsActivity extends PhoneBookActivity {
 
     private void onClickStar() {
         final boolean checked = contactStar.isChecked();
+        ContactDetails details = vm.getContactDetails();
         if (null != details){
             details.getContact();
             AsyncTask.execute(()->vm.getRepository().setContactStarred(details.getContact(),checked),
                     new AsyncTask.AsyncTaskCallback(){
                         @Override
                         public void onError(AsyncTask task) {
-                            Log.e(TAG,null,task.getError());
-                            Toast.makeText(ContactDetailsActivity.this,R.string.message_contact_load_error, Toast.LENGTH_SHORT).show();
+                            Log.e(TAG,"contact star error",task.getError());
+                            contactStar.setChecked(!checked);
                         }
 
                         @Override
@@ -165,13 +161,13 @@ public class ContactDetailsActivity extends PhoneBookActivity {
         }
     }
 
-    private void onDeleteContact() {
+    private void onDeleteContact(@Nullable ContactDetails details) {
+        if (null == details) return;
         String message = getResources().getQuantityString(R.plurals.message_warning_delete_contact,1);
-
         new AlertDialog.Builder(this)
                 .setPositiveButton(R.string.label_cancel,null)
                 .setNegativeButton(R.string.label_delete,(di,which)->{
-                    vm.removeContact(vm.getContactDetails(),new AsyncTask.AsyncTaskCallback(){
+                    vm.removeContact(details,new AsyncTask.AsyncTaskCallback(){
                         @Override
                         public void onError(AsyncTask task) {
                             Log.e(TAG,null,task.getError());
@@ -189,65 +185,116 @@ public class ContactDetailsActivity extends PhoneBookActivity {
                 .show();
     }
 
-    void onEditContact() {
-        if (!checkContactLoaded()) return;
+    private void onEditContact(@Nullable ContactDetails details) {
+        if (null == details) return;
         OpenActivity.editContact(this,details.getContentUri());
     }
 
-    void loadContact() {
-        Uri data = getIntent().getData();
-        if (null == data) {
-            finish();
-            return;
+    private void onShareContact(@Nullable ContactDetails details) {
+        // TODO: show chooser for share option like via sms or vcard
+        //  and chooser for selecting what to send
+        if (null == details) return;
+        List<PhoneNumber> numbers = details.getPhoneNumbers();
+        String displayName = details.getDisplayName(ContactSorting.FIRSTNAME_FIRST);
+        if (numbers == null || numbers.isEmpty()) return;
+        StringBuilder body = new StringBuilder(displayName);
+        for (PhoneNumber number : numbers) {
+            body.append("\n").append(number.getTypeLabel(getResources())).append(" ")
+                    .append(number.getNumber());
         }
-        vm.loadContactDetails(data,new AsyncTask.AsyncTaskCallback(){
+        OpenActivity.sharePlainText(this,body.toString());
+    }
+    private void loadContact() {
+        AsyncTask.execute(()->vm.getRepository().getContactDetails(getIntent().getData(),null),new AsyncTask.AsyncTaskCallback(){
             @Override
             public void onError(AsyncTask task) {
-                Log.e(TAG,null,task.getError());
+                Log.e(TAG,"",task.getError());
                 finish();
             }
 
             @Override
             public void onResult(AsyncTask task) {
-                onContactLoaded(task.getResult());
+                ContactDetails details = task.getResult();
+                Log.i(TAG,"details found: "+(null != details));
+                onContactLoaded(details);
             }
         });
     }
 
     private void onContactLoaded(@Nullable ContactDetails details) {
-        this.details = details;
+        vm.setContactDetails(details);
         if (null == details) {
             Toast.makeText(this,R.string.message_contact_not_found,Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        ContactSorting sorting = Settings.getInstance(this).getContactSorting();
+        ContactSorting sorting = getContactSorting();
         Glide.with(this).load(details.getPhotoUri())
                 .placeholder(createContactPhotoPlaceholder(details,sorting,contactPhoto,
                         vectorDrawable(this, R.drawable.placeholder_contact_photo)))
                 .into(contactPhoto);
         contactStar.setChecked(details.getContact().isStarred());
-
-        String displayName = details.getContact().getDisplayName(sorting.isDisplayFirstNameFirst());
-        if (Check.isEmptyString(displayName)) displayName = "Unknown Name";
+        String displayName = details.getDisplayName(sorting);
         contactName.setText(displayName);
-
+        prepareSectionName(details.getName());
         prepareSectionPhoneNumber(details.getPhoneNumbers());
-
         prepareSectionEmail(details.getEmails());
-
         prepareSectionEvent(details.getEvents());
-
         prepareSectionRelative(details.getRelations());
-
         prepareSectionAddress(details.getAddresses());
-
         prepareSectionOrganization(details.getOrganization());
-
         prepareSectionWebsite(details.getWebsites());
-
         prepareSectionNote(details.getNote());
     }
+
+    private ContactSorting getContactSorting() {
+        return Settings.getInstance(this).getContactSorting();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///                         Section Name                                   ///
+    /////////////////////////////////////////////////////////////////////////////
+
+    private View sectionName;
+    private GridLayout namesList;
+
+    private void initSectionName() {
+        sectionName = findViewById(R.id.section_name);
+        namesList = sectionName.findViewById(R.id.grid);
+        namesList.setColumnCount(1);
+        ImageView icon = sectionName.findViewById(R.id.section_icon);
+        icon.setImageDrawable(vectorDrawable(this,R.drawable.ic_baseline_person));
+    }
+
+    private void prepareSectionName(@Nullable Name name) {
+        sectionName.setVisibility(View.GONE);
+        namesList.removeAllViews();
+        if (null == name) return;
+        String nickname = name.getNickname();
+        String phoneticName = name.buildPhoneticName();
+        logDebug(TAG,"name="+name);
+        boolean visibleSection = false;
+        if (!isEmptyString(phoneticName)){
+            View view = getLayoutInflater().inflate(R.layout.list_item_two_lines,namesList,true);
+            TextView primary = view.findViewById(R.id.text_primary);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            primary.setText(phoneticName);
+            secondary.setText(R.string.label_phonetic_name);
+            visibleSection = true;
+        }
+        if (!isEmptyString(nickname)){
+            View view = getLayoutInflater().inflate(R.layout.list_item_two_lines,namesList,true);
+            TextView primary = view.findViewById(R.id.text_primary);
+            TextView secondary = view.findViewById(R.id.text_secondary);
+            primary.setText(nickname);
+            secondary.setText(R.string.label_nickname);
+            visibleSection = true;
+        }
+        if (visibleSection)
+            sectionName.setVisibility(View.VISIBLE);
+    }
+
+
 
     ///////////////////////////////////////////////////////////////////////////////
     ///                         Section Phone Number                           ///
@@ -280,12 +327,6 @@ public class ContactDetailsActivity extends PhoneBookActivity {
             view.setOnLongClickListener(v->onLongClickNumber(v,number));
             view.findViewById(R.id.action_sms).setOnClickListener(v->onClickSms(number));
 
-            ContextMenuInfo info = new ContextMenuInfo();
-            info.menu = CONTEXT_MENU_NUMBER;
-            info.extras = number;
-            view.setTag(info);
-            registerForContextMenu(view);
-
             phoneNumbersList.addView(view);
         }
         sectionNumber.setVisibility(View.VISIBLE);
@@ -300,7 +341,6 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     }
 
     private boolean onLongClickNumber(@NonNull View view, @NonNull PhoneNumber number) {
-        // TODO: show context menu for number
         String[] items = new String[2];
         items[0] = getString(R.string.label_copy);
         items[1] = !number.isPrimary() ? getString(R.string.label_set_default) : getString(R.string.label_unset_default);
@@ -327,16 +367,15 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     }
 
     private void changePhoneNumberPrimary(PhoneNumber number) {
-        vm.togglePhoneNumberPrimary(number,new AsyncTask.AsyncTaskCallback(){
+        AsyncTask.execute(()->vm.getRepository().changePhoneNumberPrimary(number,!number.isPrimary()),new AsyncTask.AsyncTaskCallback(){
             @Override
             public void onError(AsyncTask task) {
-                Log.e(TAG,null,task.getError());
+                Log.e(TAG,"",task.getError());
             }
 
             @Override
             public void onResult(AsyncTask task) {
-                boolean saved = task.getResult();
-                if (saved) loadContact();
+                if (task.getResult()) loadContact();
             }
         });
     }
@@ -574,6 +613,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     }
 
     private void onClickWebsite(@NonNull Website website) {
+        OpenActivity.viewWebsite(this,website.getUrl());
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -589,7 +629,7 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     }
 
     void prepareSectionNote(Note data) {
-        boolean hasNote = null != data && !Check.isEmptyString(data.getNote());
+        boolean hasNote = null != data && !isEmptyString(data.getNote());
         if (hasNote) {
             note.setText(data.getNote());
             sectionNote.setVisibility(View.VISIBLE);
@@ -604,16 +644,10 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     ///                              Others                                    ///
     /////////////////////////////////////////////////////////////////////////////
 
-    private boolean checkContactLoaded() {
-        if (null == details) {
-            Toast.makeText(this,R.string.message_contact_not_loaded,Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return true;
-    }
+
 
     private void copyToClipBoard(String text) {
-        if (Check.isEmptyString(text)) return;
+        if (isEmptyString(text)) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             android.text.ClipboardManager manager = (android.text.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
             manager.setText(text);
@@ -634,9 +668,4 @@ public class ContactDetailsActivity extends PhoneBookActivity {
     private static final int ITEM_COPY = 1;
 
     private static final int ITEM_SET_UNSET_PRIMARY = 2;
-
-    private static class ContextMenuInfo {
-        int menu;
-        Object extras;
-    }
 }

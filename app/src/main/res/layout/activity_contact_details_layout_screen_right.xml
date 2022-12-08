@@ -4,6 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingStart="@dimen/gap_medium"
+    android:paddingEnd="@dimen/gap_small"
     android:orientation="vertical">
 
     <TextView
@@ -20,7 +22,7 @@
 
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
-        android:layout_height="2dp"/>
+        android:layout_height="1dp"/>
 
     <!-- section name -->
 

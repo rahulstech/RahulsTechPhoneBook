@@ -7,40 +7,39 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import rahulstech.android.phonebook.R;
-import rahulstech.android.phonebook.model.ContactAccount;
+import rahulstech.android.phonebook.model.RawContact;
 import rahulstech.android.phonebook.util.Check;
 
-public class AccountAdapter extends BaseAdapter {
+public class ContactSourceAdapter extends BaseAdapter {
 
-    private List<ContactAccount> accounts = Collections.emptyList();
+    private List<RawContact> sources = Collections.emptyList();
     private LayoutInflater inflater;
 
-    public AccountAdapter(@NonNull Context context) {
+    public ContactSourceAdapter(@NonNull Context context) {
         Check.isNonNull(context,"null == context");
         inflater = LayoutInflater.from(context);
     }
 
-    public void setAccounts(@Nullable List<ContactAccount> accounts) {
-        if (null == accounts) this.accounts = Collections.emptyList();
-        else this.accounts = accounts;
+    public void setSources(@Nullable List<RawContact> sources) {
+        if (null == sources) this.sources = Collections.emptyList();
+        else this.sources = sources;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return accounts.size();
+        return sources.size();
     }
 
     @Override
-    public ContactAccount getItem(int position) {
-        return accounts.get(position);
+    public RawContact getItem(int position) {
+        return sources.get(position);
     }
 
     @Override
@@ -58,17 +57,17 @@ public class AccountAdapter extends BaseAdapter {
             convertView.setTag(vh);
         }
         ViewHolder vh = (ViewHolder) convertView.getTag();
-        ContactAccount account = getItem(position);
-        vh.text1.setText(account.displayName);
-        vh.text2.setText(account.name);
+        RawContact account = getItem(position);
+        vh.text1.setText(account.getDisplayName());
+        vh.text2.setText(account.getName());
         return convertView;
     }
 
     public int getPositionByTypeAndName(@Nullable String type, @Nullable String name) {
         int position = 0;
-        for (ContactAccount acc : accounts) {
-            String accountType = acc.type;
-            String accountName = acc.name;
+        for (RawContact src : sources) {
+            String accountType = src.getType();
+            String accountName = src.getName();
             if (Check.isEquals(type,accountType)
                     && Check.isEquals(name,accountName)) return position;
             position++;

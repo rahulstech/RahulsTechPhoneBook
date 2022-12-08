@@ -19,6 +19,7 @@ public final class OpenActivity {
         Check.isNonNull(data,"null == data");
         Intent i = new Intent(activity, ContactDetailsActivity.class);
         i.setAction(Intent.ACTION_VIEW);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
         i.setDataAndType(data,ContactsContract.Contacts.CONTENT_TYPE);
         activity.startActivity(i);
     }
@@ -27,6 +28,7 @@ public final class OpenActivity {
         Check.isNonNull(activity,"null == activity");
         Intent i = new Intent(activity, ContactInputActivity.class);
         i.setAction(Intent.ACTION_INSERT);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
         i.setType(ContactsContract.Contacts.CONTENT_TYPE);
         activity.startActivity(i);
     }
@@ -36,6 +38,7 @@ public final class OpenActivity {
         Check.isNonNull(data,"null == data");
         Intent i = new Intent(activity, ContactInputActivity.class);
         i.setAction(Intent.ACTION_EDIT);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
         i.setDataAndType(data,ContactsContract.Contacts.CONTENT_ITEM_TYPE);
         activity.startActivity(i);
     }
@@ -46,8 +49,15 @@ public final class OpenActivity {
         startActivityWithChooser(activity,i);
     }
 
+    public static void sharePlainText(@NonNull Activity activity, String body) {
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("text/plain");
+        i.putExtra(Intent.EXTRA_TEXT,body);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivityWithChooser(activity,i);
+    }
+
     public static void sendSms(@NonNull Activity activity, String number) {
-        if (Check.isEmptyString(number)) return;
         Intent i = new Intent(Intent.ACTION_VIEW,Uri.parse("sms:"+number));
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityWithChooser(activity,i);
